@@ -84,6 +84,9 @@ else
     arch="x32"
 fi
 
+# Get the ip address to print it later
+ipaccess=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
+
 # Check for the dependencies before wee begin to install Atlassian products
 echo ""
 ask "First step is to install the mysql-server. Do you want to proceed?" N
@@ -122,15 +125,14 @@ mysqlcjar="/tmp/$mysqlcversion/$mysqlcversion-bin.jar"
 wget -O /tmp/mysqlc.tar.gz $mysqlcdl
 tar xzf $mysqlctar
 
-# Install Jira
 {
 	ask "Install Atlassian JIRA?" N
 	if [ $? -ne 1 ] ; then
 		jirainstallpath="/opt/atlassian/jira/"
 		product="jira"
-		chooseversion61="6.1.6 6.1.5 6.1.4 6.1.3 6.1.2 6.1.1 6.1"
-		chooseversion60="6.0.8 6.0.7 6.0.6 6.0.5 6.0.4 6.0.3 6.0.2 6.0.1 6.0"
-		chooseversionold="5.2.11 5.1.8 5.0.7 4.4.5"
+		chooseversion61="6.1.7, 6.1.6, 6.1.5, 6.1.4, 6.1.3, 6.1.2, 6.1.1, 6.1"
+		chooseversion6="6.0.8, 6.0.7, 6.0.6, 6.0.5, 6.0.4, 6.0.3, 6.0.2, 6.0.1, 6.0"
+		chooseversionold="5.2.11, 5.1.8, 5.0.7, 4.4.5"
 		function askversion {
     		while true; do
 	        	if [ "${2:-}" = "Latest" ]; then
@@ -170,11 +172,11 @@ tar xzf $mysqlctar
 		        esac
 	    	done
 		}
-		echo "Which version of JIRA would you like to install?
-
-		Available are:"
+		echo "Which version of JIRA would you like to install?"
+		echo ""
+		echo "Available are:"
 		echo $chooseversion61
-		echo $chooseversion60
+		echo $chooseversion6
 		echo $chooseversionold
 		echo ""
 		askversion "Please choose now:" Latest
@@ -184,30 +186,131 @@ tar xzf $mysqlctar
 		randpw
 		read -s -p "Enter Password: " jiradbpw
 		echo "
-		Creating database for Jira... Please wait
+		Creating database for JIRA... Please wait
 		"
-		jiradbcreate="CREATE DATABASE jira CHARACTER SET utf8 COLLATE utf8_bin;"
-		jiradbgrant="GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER,INDEX on jira.* TO 'jira'@'localhost' IDENTIFIED BY '$jiradbpw';"
+		jiradbcreate="CREATE DATABASE $product CHARACTER SET utf8 COLLATE utf8_bin;"
+		jiradbgrant="GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER,INDEX on $product.* TO '$product'@'localhost' IDENTIFIED BY '$jiradbpw';"
 		jirasql="$jiradbcreate $jiradbgrant $dbflush"
 		mysql --defaults-file=/etc/mysql/debian.cnf -e "$jirasql"
-		echo "Downloading and installing JIRA. This will take a while.
+		echo "Downloading and installing JIRA. This will take a while."
+		echo "After the download finished you can go through the setup by pressing enter."
+		echo "The standard settings are fine.
 		"
-		wget -O /tmp/jira_$productversion-$arch.bin $dl
-		chmod +x /tmp/jira_$productversion-$arch.bin
-		/tmp/jira_$productversion-$arch.bin
+		wget -O /tmp/$product_$productversion-$arch.bin $dl
+		chmod +x /tmp/$product_$productversion-$arch.bin
+		/tmp/$product_$productversion-$arch.bin
 		cp $mysqlcjar $jirainstallpath/lib/
 		echo "Now we must restart JIRA. Please wait...
 		"
-		/etc/init.d/jira stop
+		/etc/init.d/$product stop
 		sleep 10
-		/etc/init.d/jira start
+		/etc/init.d/$product start
 		echo ""
 		echo "Installation of JIRA finished."
-		echo "If you don't proceed with further installations please go to http://localhost:8080 now and setup JIRA."
-		echo "For the database setup you can use the database and user name 'jira' and the password $jiradbpw"
+		echo "If you don't proceed with further installations please go to http://${ipaccess[0]}:8080 now and setup JIRA."
+		echo "For the database setup you can use the database and user name '$product' and the password $jiradbpw"
 		ask "Install another Atlassian product?" N
 		if [ $? -ne 0 ] ; then
-			echo "Thanks for using this script. Goodbye!"
+			echo" To secure your MySQL Server istallation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			wait 10
+			mysql_secure_installation
+		exit 0
+		fi
+	fi
+}
+
+{
+	ask "Install Atlassian Confluence?" N
+	if [ $? -ne 1 ] ; then
+		confluenceinstallpath="/opt/atlassian/confluence/"
+		product="confluence"
+		chooseversion54="5.4.2, 5.4.1, 5.4"
+		chooseversion53="5.3.4, 5.3.1, 5.3"
+		chooseversion52="5.2.5, 5.2.3"
+		chooseversion51="5.1.5, 5.1.4, 5.1.3, 5.1.2, 5.1.1, 5.1"
+		chooseversion5="5.0.3, 5.0.2, 5.0.1, 5.0"
+		chooseversionold="4.3.7, 4.2.13, 4.1.9, 4.0.5"
+		function askversion {
+    		while true; do
+	        	if [ "${2:-}" = "Latest" ]; then
+	            	prompt="Latest"
+	            	default="Latest"
+	        	fi
+
+		        read -p "$1 [$prompt] " REPLY
+		 
+		        if [ -z "$REPLY" ]; then
+		            REPLY=$default
+		        fi
+		 
+		        case "$REPLY" in
+					Latest) productversion="5.4.2" ; return 0 ;;
+					5.4.2) productversion="5.4.2" ; return 0 ;;
+					5.4.1) productversion="5.4.1" ; return 0 ;;
+					5.4) productversion="5.4" ; return 0 ;;
+					5.3.4) productversion="5.3.4" ; return 0 ;;
+					5.3.1) productversion="5.3.1" ; return 0 ;;
+					5.3) productversion="5.3" ; return 0 ;;
+					5.2.5) productversion="5.2.5" ; return 0 ;;
+					5.2.3) productversion="5.2.3" ; return 0 ;;
+					5.1.5) productversion="5.1.5" ; return 0 ;;
+					5.1.4) productversion="5.1.4" ; return 0 ;;
+					5.1.3) productversion="5.1.3" ; return 0 ;;
+					5.1.2) productversion="5.1.2" ; return 0 ;;
+					5.1.1) productversion="5.1.1" ; return 0 ;;
+					5.1) productversion="5.1" ; return 0 ;;
+					5.0.3) productversion="5.0.3" ; return 0 ;;
+					5.0.2) productversion="5.0.2" ; return 0 ;;
+					5.0.1) productversion="5.0.1" ; return 0 ;;
+					5.0) productversion="5.0" ; return 0 ;;
+		        esac
+	    	done
+		}
+		echo "Which version of Confluence would you like to install?"
+		echo ""
+		echo "Available are:"
+		echo $chooseversion54
+		echo $chooseversion53
+		echo $chooseversion52
+		echo $chooseversion51
+		echo $chooseversion5
+		echo $chooseversionold
+		echo ""
+		askversion "Please choose now:" Latest
+		dl="http://downloads.atlassian.com/software/$product/downloads/atlassian-$product-$productversion-$arch.bin"
+		echo "We need to create a database for Confluence. Please enter one or copy this random generated password:
+		"
+		randpw
+		read -s -p "Enter Password: " confluencedbpw
+		echo "
+		Creating database for Confluence... Please wait
+		"
+		confluencedbbcreate="CREATE DATABASE $product CHARACTER SET utf8 COLLATE utf8_bin;"
+		confluencedbgrant="GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER,INDEX on $product.* TO '$product'@'localhost' IDENTIFIED BY '$jiradbpw';"
+		confluencesql="$confluencedbcreate $confluencedbgrant $dbflush"
+		mysql --defaults-file=/etc/mysql/debian.cnf -e "$confluencesql"
+		echo "Downloading and installing Confluence. This will take a while."
+		echo "After the download finished you can go through the setup by pressing enter."
+		echo "The standard settings are fine.
+		"
+		wget -O /tmp/$product_$productversion-$arch.bin $dl
+		chmod +x /tmp/$product_$productversion-$arch.bin
+		/tmp/$product_$productversion-$arch.bin
+		cp $mysqlcjar $confluenceinstallpath/lib/
+		echo "Now we must restart Confluence. Please wait...
+		"
+		/etc/init.d/$product stop
+		sleep 10
+		/etc/init.d/$product start
+		echo ""
+		echo "Installation of Confluence finished."
+		echo "If you don't proceed with further installations please go to http://${ipaccess[0]}:8090 now and setup Confluence."
+		echo "For the database setup you can use the database and user name '$product' and the password $confluencedbpw"
+		ask "Install another Atlassian product?" N
+		if [ $? -ne 0 ] ; then
+			echo" To secure your MySQL Server istallation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			wait 10
+			mysql_secure_installation
 		exit 0
 		fi
 	fi
