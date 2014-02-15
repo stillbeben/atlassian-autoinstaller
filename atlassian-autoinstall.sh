@@ -22,7 +22,8 @@
 #                                                                           #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-echo "Welcome to the Atlassian Autoinstaller.
+echo "
+Welcome to the Atlassian Autoinstaller.
 "
 
 if [[ $EUID -ne 0 ]]; then
@@ -85,25 +86,27 @@ else
 fi
 
 # Check for the dependencies before wee begin to install Atlassian products
-install_deps () {
-	DEPS=(mysql-server mysql-client apache2)
+ask "First step is to install the mysql-server. Do you want to proceed?" N
+
+if [ $? -ne 0 ] ; then
+	echo "Goodbye!"
+	exit 0
+fi
+
+installdeps () {
+	DEPS=(mysql-server mysql-client)
 	export DEBIAN_FRONTEND=noninteractive
-    aptitude install -q -y ${DEPS[*]}
+    aptitude update && aptitude install -q -y ${DEPS[*]}
 }
 
-# execute the check_deps function
-install_deps
-
-# Maybe Later we would like to make this more generic. So let's define this outside of the subshell:
-jiralatest=6.1.7
-jiraversion=$jiralatest
-jiradl="http://downloads.atlassian.com/software/jira/downloads/atlassian-jira-$jiraversion-$arch.bin"
+installdeps
 
 dbflush="flush privileges;"
 
 # The mysql-connector-java is required. Currently this script download and install mysql-connector-java-5.1.29.tar.gz
-echo "Now we download and unpack the mysql-connector-java for later use.
-Without it we can't connect the Applications to mysql
+echo "
+Now we need to download and unpack the mysql-connector-java for later use.
+Without it we can't connect the Applications to out MySQL Server.
 "
 ask "Proceed?" N
 if [ $? -ne 0 ] ; then
@@ -112,7 +115,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 mysqlcversion="mysql-connector-java-5.1.29"
-mysqlcdl="https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.29.tar.gz"
+mysqlcdl="https://dev.mysql.com/get/Downloads/Connector-J/$mysqlcversion.tar.gz"
 mysqlctar="/tmp/mysqlc.tar.gz"
 mysqlcjar="/tmp/$mysqlcversion/$mysqlcversion-bin.jar"
 
@@ -121,9 +124,13 @@ tar xzf $mysqlctar
 
 # Install Jira
 {
-	ask "Install Atlassian Jira Latest?" N
+	ask "Install Atlassian JIRA?" N
 	if [ $? -ne 1 ] ; then
 		jirainstallpath="/opt/atlassian/jira/"
+		product="jira"
+		jiralatest="6.1.7"
+		productversion=$jiralatest
+		dl="http://downloads.atlassian.com/software/$product/downloads/atlassian-$product-$productversion-$arch.bin"
 		echo "We need to create a database for Jira. Please enter one or copy this one?"
 		randpw
 		read -s -p "Enter Password: " jiradbpw
@@ -133,9 +140,9 @@ tar xzf $mysqlctar
 		jirasql="$jiradbcreate $jiradbgrant $dbflush"
 		mysql --defaults-file=/etc/mysql/debian.cnf -e "$jirasql"
 		echo "Downloading and installing Jira. This will take a while."
-		wget -O /tmp/jira_$jiraversion-$arch.bin $jiradl
-		chmod +x /tmp/jira_$jiraversion-$arch.bin
-		/tmp/jira_$jiraversion-$arch.bin
+		wget -O /tmp/jira_$productversion-$arch.bin $dl
+		chmod +x /tmp/jira_$productversion-$arch.bin
+		/tmp/jira_$productversion-$arch.bin
 		cp $mysqlcjar $jirainstallpath/lib/
 		echo "Now we must restart Jira. Please wait..."
 		/etc/init.d/jira stop
