@@ -64,6 +64,8 @@ function ask {
 }
 
 echo "The next steps will guide you through the setup of Atlassian products. If you're not going to enter 'Y' nothing will happen.
+
+It's strongly recommended to read the README.md before proceeding!
 "
 ask "Proceed?" N
 if [ $? -ne 0 ] ; then
@@ -180,7 +182,7 @@ tar xzf $mysqlctar
 		echo $chooseversionold
 		echo ""
 		askversion "Please choose now:" Latest
-		dl="http://downloads.atlassian.com/software/$product/downloads/atlassian-$product-$productversion-$arch.bin"
+		dl="https://downloads.atlassian.com/software/$product/downloads/atlassian-$product-$productversion-$arch.bin"
 		echo "We need to create a database for JIRA. Please enter one or copy this random generated password:
 		"
 		randpw
@@ -196,9 +198,9 @@ tar xzf $mysqlctar
 		echo "After the download finished you can go through the setup by pressing enter."
 		echo "The standard settings are fine.
 		"
-		wget -O /tmp/$product_$productversion-$arch.bin $dl
-		chmod +x /tmp/$product_$productversion-$arch.bin
-		/tmp/$product_$productversion-$arch.bin
+		wget -O /tmp/$product-$productversion-$arch.bin $dl
+		chmod +x /tmp/$product-$productversion-$arch.bin
+		/tmp/$product-$productversion-$arch.bin
 		cp $mysqlcjar $jirainstallpath/lib/
 		echo "Now we must restart JIRA. Please wait...
 		"
@@ -218,6 +220,8 @@ tar xzf $mysqlctar
 		fi
 	fi
 }
+
+echo ""
 
 {
 	ask "Install Atlassian Confluence?" N
@@ -277,7 +281,7 @@ tar xzf $mysqlctar
 		echo $chooseversionold
 		echo ""
 		askversion "Please choose now:" Latest
-		dl="http://downloads.atlassian.com/software/$product/downloads/atlassian-$product-$productversion-$arch.bin"
+		dl="https://downloads.atlassian.com/software/$product/downloads/atlassian-$product-$productversion-$arch.bin"
 		echo "We need to create a database for Confluence. Please enter one or copy this random generated password:
 		"
 		randpw
@@ -293,9 +297,9 @@ tar xzf $mysqlctar
 		echo "After the download finished you can go through the setup by pressing enter."
 		echo "The standard settings are fine.
 		"
-		wget -O /tmp/$product_$productversion-$arch.bin $dl
-		chmod +x /tmp/$product_$productversion-$arch.bin
-		/tmp/$product_$productversion-$arch.bin
+		wget -O /tmp/$product-$productversion-$arch.bin $dl
+		chmod +x /tmp/$product-$productversion-$arch.bin
+		/tmp/$product-$productversion-$arch.bin
 		cp $mysqlcjar $confluenceinstallpath/lib/
 		echo "Now we must restart Confluence. Please wait...
 		"
@@ -313,6 +317,198 @@ tar xzf $mysqlctar
 			mysql_secure_installation
 		exit 0
 		fi
+	fi
+}
+
+echo ""
+echo "Before proceeding with the installation of other Atlassian products we must download and install Oracle Java.
+Why? JIRA and Confluence are shipping with Java. The other applications are currently not.
+"
+ask "Proceed with the Java Installation?" Y
+if [ $? -ne 0 ] ; then
+	echo "Can't proceed without Java. Goodbye!"
+	exit 0
+fi
+
+if [ $arch == x32 ] ; then
+	jdkarch="i586"
+else
+	jdkarch="x64"
+fi
+
+# Please note that the download link is not as generic as you wish it would be!
+jdkversion="jdk-7u51-linux"
+jdkunpack="jdk1.7.0_51"
+wget -O /tmp/java_jdk.tar.gz --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com" "http://download.oracle.com/otn-pub/java/jdk/7u51-b13/$jdkversion-$jdkarch.tar.gz"
+echo "Unpacking Java and moving to /opt/"
+tar xzf /tmp/java_jdk.tar.gz
+mv /tmp/$jdkunpack /opt
+chown -R root: /opt/$jdkunpack
+echo "Linking new Java to /opt/java_current"
+if [ -d /opt/java_current ]; then
+	rm  /opt/java_current
+fi
+ln -s /opt/$jdkunpack /opt/java_current
+echo "Setting up JAVA_HOME in /etc/environment if it doesn't exist. Hold on!"
+grep JAVA_HOME="/opt/java_current" /etc/environment
+if [ $? -eq 1 ]; then
+	echo JAVA_HOME="/opt/java_current" >> /etc/environment
+fi
+echo ""
+
+{
+	ask "Install Atlassian Bamboo?" N
+	if [ $? -ne 1 ] ; then
+		bambooinstallpath="/opt/atlassian/bamboo/"
+		bamboolinkpath="/opt/atlassian/bamboo"
+		product="bamboo"
+		chooseversion54="5.4.1, 5.4"
+		chooseversion53="5.3"
+		chooseversion52="5.2.2, 5.2.1, 5.2"
+		chooseversion51="5.1.1, 5.1.0"
+		chooseversion5="5.0.1, 5.0"
+		chooseversionold="4.4.8, 4.3.4, 4.2.2, 4.1.2, 4.0.1, 3.4.5, 3.3.4"
+		function askversion {
+    		while true; do
+	        	if [ "${2:-}" = "Latest" ]; then
+	            	prompt="Latest"
+	            	default="Latest"
+	        	fi
+
+		        read -p "$1 [$prompt] " REPLY
+		 
+		        if [ -z "$REPLY" ]; then
+		            REPLY=$default
+		        fi
+		 
+		        case "$REPLY" in
+					Latest) productversion="5.4.1" ; return 0 ;;
+					5.4.1) productversion="5.4.1" ; return 0 ;;
+					5.4.1) productversion="5.4.1" ; return 0 ;;
+					5.4) productversion="5.4" ; return 0 ;;
+					5.3) productversion="5.3" ; return 0 ;;
+					5.2.2) productversion="5.2.2" ; return 0 ;;
+					5.2) productversion="5.2" ; return 0 ;;
+					5.1.1) productversion="5.1.1" ; return 0 ;;
+					5.1.0) productversion="5.1.0" ; return 0 ;;
+					5.0.1) productversion="5.0.1" ; return 0 ;;
+					5.0) productversion="5.0" ; return 0 ;;
+					4.4.8) productversion="4.4.8" ; return 0 ;;
+					4.3.4) productversion="4.3.4" ; return 0 ;;
+					4.2.2) productversion="4.2.2" ; return 0 ;;
+					4.1.2) productversion="4.1.2" ; return 0 ;;
+					4.0.1) productversion="4.0.1" ; return 0 ;;
+					3.4.5) productversion="3.4.5" ; return 0 ;;
+					3.3.4) productversion="3.3.4" ; return 0 ;;
+		        esac
+	    	done
+		}
+		echo "Which version of Bamboo would you like to install?"
+		echo ""
+		echo "Available are:"
+		echo $chooseversion54
+		echo $chooseversion53
+		echo $chooseversion52
+		echo $chooseversion51
+		echo $chooseversion5
+		echo $chooseversionold
+		echo ""
+		askversion "Please choose now:" Latest
+		dl="https://downloads.atlassian.com/software/$product/downloads/atlassian-$product-$productversion.tar.gz"
+		echo "We need to create a database for Bamboo. Please enter one or copy this random generated password:
+		"
+		randpw
+		read -s -p "Enter Password: " bamboodbpw
+		echo "
+		Creating database for Bamboo... Please wait
+		"
+		bamboodbbcreate="CREATE DATABASE $product CHARACTER SET utf8 COLLATE utf8_bin;"
+		bamboodbgrant="GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER,INDEX on $product.* TO '$product'@'localhost' IDENTIFIED BY '$jiradbpw';"
+		bamboosql="$bamboodbcreate $bamboodbgrant $dbflush"
+		mysql --defaults-file=/etc/mysql/debian.cnf -e "$bamboosql"
+		echo "Downloading and installing Bamboo. This will take a while."
+		echo "As no setup is currently provided we'll do some magic to get it running."
+		echo "Let's get bamboo:"
+		wget -O /tmp/$product-$productversion.tar.gz $dl
+		echo "Unpack it..."
+		tar xzf /tmp/$product-$productversion.tar.gz
+		echo "Move it to /opt/atlassian/"
+		mkdir /opt/atlassian
+		mv /tmp/atlassian-$product-$productversion /opt/atlassian/
+		echo "Link it to $bambooinstallpath..."
+		if [ -d $bamboolinkpath ]; then
+			rm  $bamboolinkpath
+		fi
+		ln -s /opt/atlassian/atlassian-$product-$productversion $bamboolinkpath
+		cp $mysqlcjar $bamboolinkpath/lib/
+		echo "Create a home directory, set up rights and tell bamboo where to find it..."
+		bamboohome="/var/atlassian/bamboo-home"
+		echo bamboo.home=$bamboohome >> $bamboolinkpath/atlassian-bamboo/WEB-INF/classes/bamboo-init.properties
+		mkdir /var/atlassian
+		mkdir $bamboohome
+		useradd --create-home -c "Bamboo role account" bamboo
+		chown -R bamboo: $bamboolinkpath
+		chown -R bamboo: /opt/atlassian/atlassian-$product-$productversion
+		chown -R bamboo: $bamboohome
+		cat <<'EOF' > /etc/init.d/$product
+#!/bin/sh -e
+# bamboo startup script
+#chkconfig: 2345 80 05
+#description: bamboo
+ 
+# Define some variables
+# Name of app ( bamboo, Confluence, etc )
+APP=bamboo
+# Name of the user to run as
+USER=bamboo
+# Location of application's bin directory
+BASE=/opt/atlassian/bamboo
+# Location of Java JDK
+export JAVA_HOME=/opt/java_current
+ 
+case "$1" in
+  # Start command
+  start)
+    echo "Starting $APP"
+    /bin/su -m $USER -c "cd $BASE/logs && $BASE/bin/startup.sh &> /dev/null"
+    ;;
+  # Stop command
+  stop)
+    echo "Stopping $APP"
+    /bin/su -m $USER -c "$BASE/bin/shutdown.sh &> /dev/null"
+    echo "$APP stopped successfully"
+    ;;
+   # Restart command
+   restart)
+        $0 stop
+        sleep 5
+        $0 start
+        ;;
+  *)
+    echo "Usage: /etc/init.d/$APP {start|restart|stop}"
+    exit 1
+    ;;
+esac
+ 
+exit 0
+EOF
+		chmod +x /etc/init.d/$product
+		echo "And in the end add bamboo as service which should start with the system..."
+		update-rc.d $product defaults
+		echo "Let's start bamboo!"
+		/etc/init.d/$product start
+		echo ""
+		echo "Installation of Bamboo finished."
+		echo "If you don't proceed with further installations please go to http://${ipaccess[0]}:8085 now and setup Bamboo."
+		echo "For the database setup you can use the database and user name '$product' and the password $bamboodbpw"
+		ask "Install another Atlassian product?" N
+		if [ $? -ne 0 ] ; then
+			echo" To secure your MySQL Server istallation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			wait 10
+			mysql_secure_installation
+		exit 0
+		fi
+		echo ""
 	fi
 }
 
