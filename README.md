@@ -46,7 +46,7 @@ Use in production environment
 -----------------------------
 
 Please note that you shouln't (really, don't do it!) use any product installed with this script in a production environment.
-If you want to do so please consider reading the Atlassian Documentation (https://confluence.atlassian.com/display/ALLDOC/Atlassian+Documentation) or get help by a professional consulting team.
+If you want to do so please consider reading the Atlassian Documentation (https://confluence.atlassian.com/display/ALLDOC/Atlassian+Documentation) or get help by a partner.
 
 Anything else?
 --------------
