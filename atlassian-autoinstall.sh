@@ -24,6 +24,13 @@
 
 echo "
 Welcome to the Atlassian Autoinstaller.
+
+It can install the following applications:
+* Atlassian JIRA
+* Atlassian Confluence
+* Atlassian Bamboo
+* Atlassian Stash
+* Atlassian Crowd
 "
 
 if [[ $EUID -ne 0 ]]; then
@@ -75,7 +82,7 @@ fi
 
 # Let's generate passwords easily
 function randpw { 
-	(< /dev/urandom tr -dc '1234567890aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ!$?=-_#+' | head -c${1:-24};echo;)
+	(< /dev/urandom tr -dc '1234567890aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ!?=-_#+' | head -c${1:-24};echo;)
 }
 
 # We must know which architecture to use
@@ -131,6 +138,7 @@ tar xzf $mysqlctar
 	ask "Install Atlassian JIRA?" N
 	if [ $? -ne 1 ] ; then
 		jirainstallpath="/opt/atlassian/jira/"
+		jiralinkpath="/opt/atlassian/jira"
 		product="jira"
 		chooseversion61="6.1.7, 6.1.6, 6.1.5, 6.1.4, 6.1.3, 6.1.2, 6.1.1, 6.1"
 		chooseversion6="6.0.8, 6.0.7, 6.0.6, 6.0.5, 6.0.4, 6.0.3, 6.0.2, 6.0.1, 6.0"
@@ -187,11 +195,11 @@ tar xzf $mysqlctar
 		"
 		randpw
 		read -s -p "Enter Password: " jiradbpw
-		echo "
-		Creating database for JIRA... Please wait
-		"
+		echo ""
+		echo "Creating database for JIRA... Please wait"
+		echo ""
 		jiradbcreate="CREATE DATABASE $product CHARACTER SET utf8 COLLATE utf8_bin;"
-		jiradbgrant="GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER,INDEX on $product.* TO '$product'@'localhost' IDENTIFIED BY '$jiradbpw';"
+		jiradbgrant="GRANT ALL on $product.* TO '$product'@'localhost' IDENTIFIED BY '$jiradbpw';"
 		jirasql="$jiradbcreate $jiradbgrant $dbflush"
 		mysql --defaults-file=/etc/mysql/debian.cnf -e "$jirasql"
 		echo "Downloading and installing JIRA. This will take a while."
@@ -201,7 +209,7 @@ tar xzf $mysqlctar
 		wget -O /tmp/$product-$productversion-$arch.bin $dl
 		chmod +x /tmp/$product-$productversion-$arch.bin
 		/tmp/$product-$productversion-$arch.bin
-		cp $mysqlcjar $jirainstallpath/lib/
+		cp $mysqlcjar $jiralinkpath/lib/
 		echo "Now we must restart JIRA. Please wait...
 		"
 		/etc/init.d/$product stop
@@ -211,9 +219,10 @@ tar xzf $mysqlctar
 		echo "Installation of JIRA finished."
 		echo "If you don't proceed with further installations please go to http://${ipaccess[0]}:8080 now and setup JIRA."
 		echo "For the database setup you can use the database and user name '$product' and the password $jiradbpw"
+		echo ""
 		ask "Install another Atlassian product?" N
 		if [ $? -ne 0 ] ; then
-			echo" To secure your MySQL Server istallation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			echo" To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
 			wait 10
 			mysql_secure_installation
 		exit 0
@@ -227,6 +236,7 @@ echo ""
 	ask "Install Atlassian Confluence?" N
 	if [ $? -ne 1 ] ; then
 		confluenceinstallpath="/opt/atlassian/confluence/"
+		confluencelinkpath="/opt/atlassian/confluence"
 		product="confluence"
 		chooseversion54="5.4.2, 5.4.1, 5.4"
 		chooseversion53="5.3.4, 5.3.1, 5.3"
@@ -286,11 +296,11 @@ echo ""
 		"
 		randpw
 		read -s -p "Enter Password: " confluencedbpw
-		echo "
-		Creating database for Confluence... Please wait
-		"
+		echo ""
+		echo "Creating database for Confluence... Please wait"
+		echo ""
 		confluencedbbcreate="CREATE DATABASE $product CHARACTER SET utf8 COLLATE utf8_bin;"
-		confluencedbgrant="GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER,INDEX on $product.* TO '$product'@'localhost' IDENTIFIED BY '$jiradbpw';"
+		confluencedbgrant="GRANT ALL on $product.* TO '$product'@'localhost' IDENTIFIED BY '$confluencedbpw';"
 		confluencesql="$confluencedbcreate $confluencedbgrant $dbflush"
 		mysql --defaults-file=/etc/mysql/debian.cnf -e "$confluencesql"
 		echo "Downloading and installing Confluence. This will take a while."
@@ -300,7 +310,7 @@ echo ""
 		wget -O /tmp/$product-$productversion-$arch.bin $dl
 		chmod +x /tmp/$product-$productversion-$arch.bin
 		/tmp/$product-$productversion-$arch.bin
-		cp $mysqlcjar $confluenceinstallpath/lib/
+		cp $mysqlcjar $confluencelinkpath/lib/
 		echo "Now we must restart Confluence. Please wait...
 		"
 		/etc/init.d/$product stop
@@ -310,9 +320,10 @@ echo ""
 		echo "Installation of Confluence finished."
 		echo "If you don't proceed with further installations please go to http://${ipaccess[0]}:8090 now and setup Confluence."
 		echo "For the database setup you can use the database and user name '$product' and the password $confluencedbpw"
+		echo ""
 		ask "Install another Atlassian product?" N
 		if [ $? -ne 0 ] ; then
-			echo" To secure your MySQL Server istallation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			echo" To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
 			wait 10
 			mysql_secure_installation
 		exit 0
@@ -419,32 +430,33 @@ echo ""
 		"
 		randpw
 		read -s -p "Enter Password: " bamboodbpw
-		echo "
-		Creating database for Bamboo... Please wait
-		"
+		echo ""
+		echo "Creating database for Bamboo... Please wait"
+		echo ""
 		bamboodbbcreate="CREATE DATABASE $product CHARACTER SET utf8 COLLATE utf8_bin;"
-		bamboodbgrant="GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER,INDEX on $product.* TO '$product'@'localhost' IDENTIFIED BY '$jiradbpw';"
+		bamboodbgrant="GRANT ALL on $product.* TO '$product'@'localhost' IDENTIFIED BY '$bamboodbpw';"
 		bamboosql="$bamboodbcreate $bamboodbgrant $dbflush"
 		mysql --defaults-file=/etc/mysql/debian.cnf -e "$bamboosql"
 		echo "Downloading and installing Bamboo. This will take a while."
 		echo "As no setup is currently provided we'll do some magic to get it running."
-		echo "Let's get bamboo:"
+		echo "Let's get Bamboo:"
 		wget -O /tmp/$product-$productversion.tar.gz $dl
 		echo "Unpack it..."
 		tar xzf /tmp/$product-$productversion.tar.gz
 		echo "Move it to /opt/atlassian/"
 		mkdir /opt/atlassian
 		mv /tmp/atlassian-$product-$productversion /opt/atlassian/
-		echo "Link it to $bambooinstallpath..."
+		echo "Link it to $bambooinstallpath ..."
 		if [ -d $bamboolinkpath ]; then
 			rm  $bamboolinkpath
 		fi
 		ln -s /opt/atlassian/atlassian-$product-$productversion $bamboolinkpath
 		cp $mysqlcjar $bamboolinkpath/lib/
 		echo "Create a home directory, set up rights and tell bamboo where to find it..."
-		bamboohome="/var/atlassian/bamboo-home"
+		bamboohome="/var/atlassian/application-data/bamboo-home"
 		echo bamboo.home=$bamboohome >> $bamboolinkpath/atlassian-bamboo/WEB-INF/classes/bamboo-init.properties
 		mkdir /var/atlassian
+		mkdir /var/atlassian/application-data
 		mkdir $bamboohome
 		useradd --create-home -c "Bamboo role account" bamboo
 		chown -R bamboo: $bamboolinkpath
@@ -493,7 +505,7 @@ esac
 exit 0
 EOF
 		chmod +x /etc/init.d/$product
-		echo "And in the end add bamboo as service which should start with the system..."
+		echo "And in the end add Bamboo as service which should start with the system..."
 		update-rc.d $product defaults
 		echo "Let's start bamboo!"
 		/etc/init.d/$product start
@@ -501,9 +513,10 @@ EOF
 		echo "Installation of Bamboo finished."
 		echo "If you don't proceed with further installations please go to http://${ipaccess[0]}:8085 now and setup Bamboo."
 		echo "For the database setup you can use the database and user name '$product' and the password $bamboodbpw"
+		echo ""
 		ask "Install another Atlassian product?" N
 		if [ $? -ne 0 ] ; then
-			echo" To secure your MySQL Server istallation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			echo" To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
 			wait 10
 			mysql_secure_installation
 		exit 0
@@ -512,4 +525,410 @@ EOF
 	fi
 }
 
-echo "hello world"
+echo ""
+
+{
+	ask "Install Atlassian Stash?" N
+	if [ $? -ne 1 ] ; then
+		stashinstallpath="/opt/atlassian/stash/"
+		stashlinkpath="/opt/atlassian/stash"
+		product="stash"
+		chooseversion210="2.10.2, 2.10.9, 2.10.0"
+		chooseversion29="2.9.5, 2.9.4, 2.9.3, 2.9.2, 2.9.1"
+		chooseversionold="2.8.4, 2.7.6, 2.6.5, 2.5.4, 2.4.2, 2.3.1, 2.2.0, 2.1.2"
+		function askversion {
+    		while true; do
+	        	if [ "${2:-}" = "Latest" ]; then
+	            	prompt="Latest"
+	            	default="Latest"
+	        	fi
+
+		        read -p "$1 [$prompt] " REPLY
+		 
+		        if [ -z "$REPLY" ]; then
+		            REPLY=$default
+		        fi
+		 
+		        case "$REPLY" in
+					Latest) productversion="2.10.2" ; return 0 ;;
+					2.10.2) productversion="2.10.2" ; return 0 ;;
+					2.9.5) productversion="2.9.5" ; return 0 ;;
+					2.9.4) productversion="2.9.4" ; return 0 ;;
+					2.9.3) productversion="2.9.3" ; return 0 ;;
+					2.9.2) productversion="2.9.2" ; return 0 ;;
+					2.9.1) productversion="2.9.1" ; return 0 ;;
+					2.8.4) productversion="2.8.4" ; return 0 ;;
+					2.7.6) productversion="2.7.6" ; return 0 ;;
+					2.6.5) productversion="2.6.5" ; return 0 ;;
+					2.5.4) productversion="2.5.4" ; return 0 ;;
+					2.4.2) productversion="2.4.2" ; return 0 ;;
+					2.3.1) productversion="2.3.1" ; return 0 ;;
+					2.2.0) productversion="2.2.0" ; return 0 ;;
+					2.1.2) productversion="2.1.2" ; return 0 ;;
+		        esac
+	    	done
+		}
+		echo "Which version of Stash would you like to install?"
+		echo ""
+		echo "Available are:"
+		echo $chooseversion210
+		echo $chooseversion29
+		echo $chooseversionold
+		echo ""
+		askversion "Please choose now:" Latest
+		dl="https://downloads.atlassian.com/software/$product/downloads/atlassian-$product-$productversion.tar.gz"
+		echo "We need to create a database for Stash. Please enter one or copy this random generated password:
+		"
+		randpw
+		read -s -p "Enter Password: " stashdbpw
+		echo ""
+		echo "Creating database for Stash... Please wait"
+		echo ""
+		stashdbbcreate="CREATE DATABASE $product CHARACTER SET utf8 COLLATE utf8_bin;"
+		stashdbgrant="GRANT ALL on $product.* TO '$product'@'localhost' IDENTIFIED BY '$stashdbpw';"
+		bstashsql="$stashdbcreate $stashdbgrant $dbflush"
+		mysql --defaults-file=/etc/mysql/debian.cnf -e "$stashsql"
+		ask "Stash requires perl and git. We must install both. Do you want to proceed?" N
+
+		if [ $? -ne 0 ] ; then
+			echo "Without perl and git Stash won't work. Goodbye!"
+			exit 0
+		fi
+
+		installdepsstash () {
+			DEPS=(git perl)
+			export DEBIAN_FRONTEND=noninteractive
+		    aptitude install -q -y ${DEPS[*]}
+		}
+
+		installdepsstash
+		echo ""
+		echo "Downloading and installing Stash. This will take a while."
+		echo "As no setup is currently provided we'll do some magic to get it running."
+		echo "Let's get Stash:"
+		echo ""
+		wget -O /tmp/$product-$productversion.tar.gz $dl
+		echo "Unpack it..."
+		tar xzf /tmp/$product-$productversion.tar.gz
+		echo "Move it to /opt/atlassian/"
+		mkdir /opt/atlassian
+		mv /tmp/atlassian-$product-$productversion /opt/atlassian/
+		echo "Link it to $stashinstallpath ..."
+		if [ -d $stashlinkpath ]; then
+			rm  $stashlinkpath
+		fi
+		ln -s /opt/atlassian/atlassian-$product-$productversion $stashlinkpath
+		cp $mysqlcjar $stashlinkpath/lib/
+		echo "Create a home directory, set up rights and tell Stash where to find it..."
+		stashhome="/var/atlassian/application-data/stash-home"
+		echo STASH_HOME="$stashhome" >> $stashlinkpath/bin/setenv.sh
+		mkdir /var/atlassian
+		mkdir /var/atlassian/application-data
+		mkdir $stashhome
+		useradd --create-home -c "Stash role account" stash
+		chown -R stash: $stashlinkpath
+		chown -R stash: /opt/atlassian/atlassian-$product-$productversion
+		chown -R stash: $stashhome
+		cat <<'EOF' > /etc/init.d/$product
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          stash
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Initscript for Atlassian Stash
+# Description:  Automatically start Atlassian Stash when the system starts up.
+#               Provide commands for manually starting and stopping Stash.
+### END INIT INFO
+# Adapt the following lines to your configuration
+# RUNUSER: The user to run Stash as.
+RUNUSER=stash
+# STASH_INSTALLDIR: The path to the Stash installation directory
+STASH_INSTALLDIR="/opt/atlassian/stash"
+# STASH_HOME: Path to the Stash home directory
+STASH_HOME="/var/atlassian/application-data/stash-home"
+# ==================================================================================
+# ==================================================================================
+# ==================================================================================
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="Atlassian Stash"
+NAME=stash
+PIDFILE=$STASH_INSTALLDIR/work/catalina.pid
+SCRIPTNAME=/etc/init.d/$NAME
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+# Define LSB log_* functions.
+# To be replaced by LSB functions
+# Defined here for distributions that don't define
+# log_daemon_msg
+log_daemon_msg () {
+    echo $@
+}
+# To be replaced by LSB functions
+# Defined here for distributions that don't define
+# log_end_msg
+log_end_msg () {
+    retval=$1
+    if [ $retval -eq 0 ]; then
+        echo "."
+    else
+        echo " failed!"
+    fi
+    return $retval
+}
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+ 
+run_with_home() {
+    if [ "$RUNUSER" != "$USER" ]; then
+        su - "$RUNUSER" -c "export STASH_HOME=${STASH_HOME};${STASH_INSTALLDIR}/bin/$1"
+    else
+        export STASH_HOME=${STASH_HOME};${STASH_INSTALLDIR}/bin/$1
+    fi
+}
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+    run_with_home start-stash.sh
+}
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+    if [ -e $PIDFILE ]; then
+      run_with_home stop-stash.sh
+    else
+      log_failure_msg "$NAME is not running."
+    fi
+}
+ 
+case "$1" in
+  start)
+    [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+    do_start
+    case "$?" in
+        0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+        2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+    esac
+    ;;
+  stop)
+    [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+    do_stop
+    case "$?" in
+        0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+        2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+    esac
+    ;;
+  status)
+       if [ ! -e $PIDFILE ]; then
+         log_failure_msg "$NAME is not running."
+         return 1
+       fi
+       status_of_proc -p $PIDFILE "" $NAME && exit 0 || exit $?
+       ;;
+  restart|force-reload)
+    #
+    # If the "reload" option is implemented then remove the
+    # 'force-reload' alias
+    #
+    log_daemon_msg "Restarting $DESC" "$NAME"
+    do_stop
+    case "$?" in
+      0|1)
+        do_start
+        case "$?" in
+            0) log_end_msg 0 ;;
+            1) log_end_msg 1 ;; # Old process is still running
+            *) log_end_msg 1 ;; # Failed to start
+        esac
+        ;;
+      *)
+        # Failed to stop
+        log_end_msg 1
+        ;;
+    esac
+    ;;
+  *)
+    echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+    exit 3
+    ;;
+esac
+EOF
+		chmod +x /etc/init.d/$product
+		echo "And in the end add Stash as service which should start with the system..."
+		update-rc.d $product defaults
+		echo "Let's start bamboo!"
+		/etc/init.d/$product start
+		echo ""
+		echo "Installation of Stash finished."
+		echo "If you don't proceed with further installations please go to http://${ipaccess[0]}:7990 now and setup Stash."
+		echo "For the database setup you can use the database and user name '$product' and the password $stashdbpw"
+		echo ""
+		ask "Install another Atlassian product?" N
+		if [ $? -ne 0 ] ; then
+			echo" To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			wait 10
+			mysql_secure_installation
+		exit 0
+		fi
+		echo ""
+	fi
+}
+
+echo ""
+
+{
+	ask "Install Atlassian Crowd?" N
+	if [ $? -ne 1 ] ; then
+		crowdinstallpath="/opt/atlassian/crowd/"
+		crowdlinkpath="/opt/atlassian/crowd"
+		product="crowd"
+		chooseversion27="2.7.1, 2.7.0"
+		chooseversionold="2.6.5, 2.6.4, 2.5.5, 2.4.10, 2.3.9, 2.2.9, 2.0.9"
+		function askversion {
+    		while true; do
+	        	if [ "${2:-}" = "Latest" ]; then
+	            	prompt="Latest"
+	            	default="Latest"
+	        	fi
+
+		        read -p "$1 [$prompt] " REPLY
+		 
+		        if [ -z "$REPLY" ]; then
+		            REPLY=$default
+		        fi
+		 
+		        case "$REPLY" in
+					Latest) productversion="2.7.1" ; return 0 ;;
+					2.7.1) productversion="2.7.1" ; return 0 ;;
+					2.7.0) productversion="2.7.0" ; return 0 ;;
+					2.6.5) productversion="2.6.5" ; return 0 ;;
+					2.6.4) productversion="2.6.4" ; return 0 ;;
+					2.5.5) productversion="2.5.5" ; return 0 ;;
+					2.4.10) productversion="2.4.10" ; return 0 ;;
+					2.3.9) productversion="2.3.9" ; return 0 ;;
+					2.2.9) productversion="2.2.9" ; return 0 ;;
+					2.0.9) productversion="2.0.9" ; return 0 ;;
+		        esac
+	    	done
+		}
+		echo "Which version of Crowd would you like to install?"
+		echo ""
+		echo "Available are:"
+		echo $chooseversion27
+		echo $chooseversionold
+		echo ""
+		askversion "Please choose now:" Latest
+		dl="https://downloads.atlassian.com/software/$product/downloads/atlassian-$product-$productversion.tar.gz"
+		echo "We need to create a database for Crowd. Please enter one or copy this random generated password:
+		"
+		randpw
+		read -s -p "Enter Password: " crowddbpw
+		echo ""
+		echo "Creating database for Crowd... Please wait"
+		echo ""
+		crowddbbcreate="CREATE DATABASE $product CHARACTER SET utf8 COLLATE utf8_bin;"
+		crowddbgrant="GRANT ALL on $product.* TO '$product'@'localhost' IDENTIFIED BY '$crowddbpw';"
+		crowdsql="$crowddbcreate $crowddbgrant $dbflush"
+		mysql --defaults-file=/etc/mysql/debian.cnf -e "$crowdsql"
+		echo ""
+		echo "Downloading and installing Crowd. This will take a while."
+		echo "As no setup is currently provided we'll do some magic to get it running."
+		echo "Let's get Crowd:"
+		echo ""
+		wget -O /tmp/$product-$productversion.tar.gz $dl
+		echo "Unpack it..."
+		tar xzf /tmp/$product-$productversion.tar.gz
+		echo "Move it to /opt/atlassian/"
+		mkdir /opt/atlassian
+		mv /tmp/atlassian-$product-$productversion /opt/atlassian/
+		echo "Link it to $crowdinstallpath ..."
+		if [ -d $crowdlinkpath ]; then
+			rm  $crowdlinkpath
+		fi
+		ln -s /opt/atlassian/atlassian-$product-$productversion $crowdlinkpath
+		cp $mysqlcjar $crowdlinkpath/apache-tomcat/lib/
+		echo "Create a home directory, set up rights and tell Crowd where to find it..."
+		crowdhome="/var/atlassian/application-data/crowd-home"
+		echo crowd.home=$crowdhome >> $crowdlinkpath/crowd-webapp/WEB-INF/classes/crowd-init.properties
+		mkdir /var/atlassian
+		mkdir /var/atlassian/application-data
+		mkdir $crowdhome
+		useradd --create-home -c "Crowd role account" crowd
+		chown -R crowd: $crowdlinkpath
+		chown -R crowd: /opt/atlassian/atlassian-$product-$productversion
+		chown -R crowd: $crowdhome
+		cat <<'EOF' > /etc/init.d/$product
+#!/bin/bash
+# Crowd startup script
+#chkconfig: 2345 80 05
+#description: Crowd
+ 
+ 
+# Based on script at http://www.bifrost.org/problems.html
+ 
+RUN_AS_USER=crowd
+CATALINA_HOME=/opt/atlassian/crowd/apache-tomcat
+ 
+start() {
+        echo "Starting Crowd: "
+        if [ "x$USER" != "x$RUN_AS_USER" ]; then
+          su - $RUN_AS_USER -c "$CATALINA_HOME/bin/startup.sh"
+        else
+          $CATALINA_HOME/bin/startup.sh
+        fi
+        echo "done."
+}
+stop() {
+        echo "Shutting down Crowd: "
+        if [ "x$USER" != "x$RUN_AS_USER" ]; then
+          su - $RUN_AS_USER -c "$CATALINA_HOME/bin/shutdown.sh"
+        else
+          $CATALINA_HOME/bin/shutdown.sh
+        fi
+        echo "done."
+}
+ 
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        stop
+        sleep 10
+        #echo "Hard killing any remaining threads.."
+        #kill -9 `cat $CATALINA_HOME/work/catalina.pid`
+        start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+esac
+ 
+exit 0
+EOF
+		chmod +x /etc/init.d/$product
+		echo "And in the end add Crowd as service which should start with the system..."
+		update-rc.d $product defaults
+		echo "Let's start bamboo!"
+		/etc/init.d/$product start
+		echo ""
+		echo "Installation of Crowd finished."
+		echo "If you don't proceed with further installations please go to http://${ipaccess[0]}:8095/crowd now and setup Crowd."
+		echo "For the database setup you can use the database and user name '$product' and the password $stashdbpw"
+		echo ""
+	fi
+}
+
+echo" To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+wait 10
+mysql_secure_installation
+
+exit 0

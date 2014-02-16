@@ -15,6 +15,8 @@ Supported products
 * Atlassian JIRA
 * Atlassian Confluence
 * Atlassian Bamboo
+* Atlassian Stash
+* Atlassian Crowd
 
 How to use
 ----------
