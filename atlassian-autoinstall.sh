@@ -6,7 +6,7 @@
 # Website: erinnerungsfragmente.de                                          #
 # Github: https://github.com/rullmann                                       #
 #                                                                           #
-# Version: 0.2 / Date: 15th February 2014                                    #
+# Version: 0.3 / Date: 16th February 2014                                    #
 #                                                                           #
 # Permission to use, copy, modify, and/or distribute this software for any  #
 # purpose with or without fee is hereby granted, provided that the above    #
@@ -30,6 +30,7 @@ It can install the following applications:
 * Atlassian Confluence
 * Atlassian Bamboo
 * Atlassian Stash
+* Atlassian Fisheye & Crucible
 * Atlassian Crowd
 "
 
@@ -106,7 +107,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 installdeps () {
-	DEPS=(mysql-server mysql-client)
+	DEPS=(mysql-server mysql-client unzip)
 	export DEBIAN_FRONTEND=noninteractive
     aptitude update && aptitude install -q -y ${DEPS[*]}
 }
@@ -222,7 +223,7 @@ tar xzf $mysqlctar
 		echo ""
 		ask "Install another Atlassian product?" N
 		if [ $? -ne 0 ] ; then
-			echo" To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			echo "To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
 			wait 10
 			mysql_secure_installation
 		exit 0
@@ -323,7 +324,7 @@ echo ""
 		echo ""
 		ask "Install another Atlassian product?" N
 		if [ $? -ne 0 ] ; then
-			echo" To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			echo "To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
 			wait 10
 			mysql_secure_installation
 		exit 0
@@ -452,7 +453,7 @@ echo ""
 		fi
 		ln -s /opt/atlassian/atlassian-$product-$productversion $bamboolinkpath
 		cp $mysqlcjar $bamboolinkpath/lib/
-		echo "Create a home directory, set up rights and tell bamboo where to find it..."
+		echo "Create a home directory, set up rights and tell Bamboo where to find it..."
 		bamboohome="/var/atlassian/application-data/bamboo-home"
 		echo bamboo.home=$bamboohome >> $bamboolinkpath/atlassian-bamboo/WEB-INF/classes/bamboo-init.properties
 		mkdir /var/atlassian
@@ -507,7 +508,7 @@ EOF
 		chmod +x /etc/init.d/$product
 		echo "And in the end add Bamboo as service which should start with the system..."
 		update-rc.d $product defaults
-		echo "Let's start bamboo!"
+		echo "Let's start Bamboo!"
 		/etc/init.d/$product start
 		echo ""
 		echo "Installation of Bamboo finished."
@@ -516,7 +517,7 @@ EOF
 		echo ""
 		ask "Install another Atlassian product?" N
 		if [ $? -ne 0 ] ; then
-			echo" To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			echo "To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
 			wait 10
 			mysql_secure_installation
 		exit 0
@@ -762,7 +763,7 @@ EOF
 		chmod +x /etc/init.d/$product
 		echo "And in the end add Stash as service which should start with the system..."
 		update-rc.d $product defaults
-		echo "Let's start bamboo!"
+		echo "Let's start Stash!"
 		/etc/init.d/$product start
 		echo ""
 		echo "Installation of Stash finished."
@@ -771,7 +772,160 @@ EOF
 		echo ""
 		ask "Install another Atlassian product?" N
 		if [ $? -ne 0 ] ; then
-			echo" To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			echo "To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+			wait 10
+			mysql_secure_installation
+		exit 0
+		fi
+		echo ""
+	fi
+}
+
+echo ""
+
+{
+	ask "Install Atlassian FishEye?" N
+	if [ $? -ne 1 ] ; then
+		fisheyeinstallpath="/opt/atlassian/fisheye/"
+		fisheyelinkpath="/opt/atlassian/fisheye"
+		product="fisheye"
+		chooseversion3="3.3.0, 3.2.4, 3.1.6, 3.0.3"
+		chooseversionold="2.10.8, 2.9.2, 2.8.2, 2.7.15, 2.6.9, 2.5.9"
+		function askversion {
+    		while true; do
+	        	if [ "${2:-}" = "Latest" ]; then
+	            	prompt="Latest"
+	            	default="Latest"
+	        	fi
+
+		        read -p "$1 [$prompt] " REPLY
+		 
+		        if [ -z "$REPLY" ]; then
+		            REPLY=$default
+		        fi
+		 
+		        case "$REPLY" in
+					Latest) productversion="3.3.0" ; return 0 ;;
+					3.3.0) productversion="3.3.0" ; return 0 ;;
+					3.2.4) productversion="3.2.4" ; return 0 ;;
+					3.1.6) productversion="3.1.6" ; return 0 ;;
+					3.0.3) productversion="3.0.3" ; return 0 ;;
+					2.10.8) productversion="2.10.8" ; return 0 ;;
+					2.9.2) productversion="2.9.2" ; return 0 ;;
+					2.8.2) productversion="2.8.2" ; return 0 ;;
+					2.7.15) productversion="2.7.15" ; return 0 ;;
+					2.6.9) productversion="2.6.9" ; return 0 ;;
+					2.5.9) productversion="2.5.9" ; return 0 ;;
+		        esac
+	    	done
+		}
+		echo "Which version of Fisheye would you like to install?"
+		echo ""
+		echo "Available are:"
+		echo $chooseversion3
+		echo $chooseversionold
+		echo ""
+		askversion "Please choose now:" Latest
+		dl="https://downloads.atlassian.com/software/$product/downloads/$product-$productversion.zip"
+		echo "We need to create a database for Fisheye. Please enter one or copy this random generated password:
+		"
+		randpw
+		read -s -p "Enter Password: " fisheyedbpw
+		echo ""
+		echo "Creating database for Fisheye... Please wait"
+		echo ""
+		fisheyedbbcreate="CREATE DATABASE $product CHARACTER SET utf8 COLLATE utf8_bin;"
+		fisheyedbgrant="GRANT ALL on $product.* TO '$product'@'localhost' IDENTIFIED BY '$fisheyedbpw';"
+		fisheyesql="$fisheyedbcreate $fisheyedbgrant $dbflush"
+		mysql --defaults-file=/etc/mysql/debian.cnf -e "$fisheyesql"
+		echo "Downloading and installing Fisheye. This will take a while."
+		echo "As no setup is currently provided we'll do some magic to get it running."
+		echo "Let's get Fisheye:"
+		wget -O /tmp/$product-$productversion.zip $dl
+		echo "Unpack it..."
+		unzip /tmp/$product-$productversion.zip -d /tmp/
+		echo "Move it to /opt/atlassian/"
+		mkdir /opt/atlassian
+		mv /tmp/fecru-$productversion /opt/atlassian/
+		echo "Link it to $fisheyeinstallpath ..."
+		if [ -d $fisheyelinkpath ]; then
+			rm  $fisheyelinkpath
+		fi
+		ln -s /opt/atlassian/fecru-$productversion $fisheyelinkpath
+		cp $mysqlcjar $fisheyelinkpath/lib/
+		echo "Create a home directory, set up rights and tell Fisheye where to find it..."
+		fisheyehome="/var/atlassian/application-data/fisheye-home"
+		grep FISHEYE_INST="$fisheyehome" /etc/environment
+		if [ $? -eq 1 ]; then
+			echo FISHEYE_INST="$fisheyehome" >> /etc/environment
+		fi
+		mkdir /var/atlassian
+		mkdir /var/atlassian/application-data
+		mkdir $fisheyehome
+		cp $fisheyelinkpath/config.xml $fisheyehome
+		useradd --create-home -c "Fisheye role account" fisheye
+		chown -R fisheye: $fisheyelinkpath
+		chown -R fisheye: /opt/atlassian/fecru-$productversion
+		chown -R fisheye: $fisheyehome
+		cat <<'EOF' > /etc/init.d/$product
+#!/bin/bash
+# Fisheye startup script
+# chkconfig: 345 90 90
+# description: Atlassian FishEye
+# original found at: http://jarrod.spiga.id.au/?p=35
+
+FISHEYE_USER=fisheye
+FISHEYE_HOME=/opt/atlassian/fisheye/bin
+start() {
+        echo "Starting FishEye: "
+        if [ "x$USER" != "x$FISHEYE_USER" ]; then
+          su - $FISHEYE_USER -c "$FISHEYE_HOME/fisheyectl.sh start"
+        else
+          $FISHEYE_HOME/fisheyectl.sh start
+        fi
+        echo "done."
+}
+stop() {
+        echo "Shutting down FishEye: "
+        if [ "x$USER" != "x$FISHEYE_USER" ]; then
+          su - $FISHEYE_USER -c "$FISHEYE_HOME/fisheyectl.sh stop"
+        else
+          $FISHEYE_HOME/fisheyectl.sh stop
+        fi
+        echo "done."
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        stop
+        sleep 10
+        start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+esac
+
+exit 0
+EOF
+		chmod +x /etc/init.d/$product
+		echo "And in the end add Fisheye as service which should start with the system..."
+		update-rc.d $product defaults
+		echo "Let's start Fisheye!"
+		/etc/init.d/$product start
+		echo ""
+		echo "Installation of Fisheye finished."
+		echo "If you don't proceed with further installations please go to http://${ipaccess[0]}:8060 now and setup Fisheye."
+		echo "For the database setup you can use the database and user name '$product' and the password $fisheyedbpw"
+		echo ""
+		ask "Install another Atlassian product?" N
+		if [ $? -ne 0 ] ; then
+			echo "To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
 			wait 10
 			mysql_secure_installation
 		exit 0
@@ -927,7 +1081,7 @@ EOF
 	fi
 }
 
-echo" To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
+echo "To secure your MySQL Server installation we'll start a script provided by MySQL Server package. Please read everything carefully and set a password for the MySQL root user!"
 wait 10
 mysql_secure_installation
 

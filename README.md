@@ -9,6 +9,9 @@ Legal note
 This script automates the process of setting up Atlassian (https://www.atlassian.com) products for testing purposes. E.g. trying out a new version of a product before upgrading.
 This script hasn't been developed by Atlassian nor is it the intention to break any copyright or trademark by Atlassian.
 
+Additionally the MySQL Connector/J is being downloaded. Please read the license on the Connector/J website:
+https://dev.mysql.com/downloads/connector/j/
+
 Supported products
 ------------------
 
@@ -16,6 +19,7 @@ Supported products
 * Atlassian Confluence
 * Atlassian Bamboo
 * Atlassian Stash
+* Atlassian Fisheye & Crucible
 * Atlassian Crowd
 
 How to use
