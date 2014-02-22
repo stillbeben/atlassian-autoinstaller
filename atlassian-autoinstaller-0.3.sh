@@ -587,7 +587,7 @@ echo ""
 		echo ""
 		stashdbbcreate="CREATE DATABASE $product CHARACTER SET utf8 COLLATE utf8_bin;"
 		stashdbgrant="GRANT ALL on $product.* TO '$product'@'localhost' IDENTIFIED BY '$stashdbpw';"
-		bstashsql="$stashdbcreate $stashdbgrant $dbflush"
+		stashsql="$stashdbcreate $stashdbgrant $dbflush"
 		mysql --defaults-file=/etc/mysql/debian.cnf -e "$stashsql"
 		ask "Stash requires perl and git. We must install both. Do you want to proceed?" N
 
@@ -1071,7 +1071,7 @@ EOF
 		chmod +x /etc/init.d/$product
 		echo "And in the end add Crowd as service which should start with the system..."
 		update-rc.d $product defaults
-		echo "Let's start bamboo!"
+		echo "Let's start Crowd!"
 		/etc/init.d/$product start
 		echo ""
 		echo "Installation of Crowd finished."
