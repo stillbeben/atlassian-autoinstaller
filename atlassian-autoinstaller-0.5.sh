@@ -245,8 +245,6 @@ if [ $? -ne 1 ] ; then
 
 	if [ $? -ne 1 ] ; then
 		installbamboo='1'
-		bambooinstallpath="/opt/atlassian/bamboo/"
-		bamboolinkpath="/opt/atlassian/bamboo"
 		productbamboo="bamboo"
 		choosebambooversion54="5.4.1, 5.4"
 		choosebambooversion53="5.3"
@@ -295,7 +293,11 @@ if [ $? -ne 1 ] ; then
 		echo -e "\nWe need to create a database for Bamboo. Please enter one or copy this random generated password: \n"
 		randpw
 		read -s -p "Enter Password: " bamboodbpw
-		echo -e "\n"
+		echo -e "\n\nWhich installation data path would you like to use?\nPlease note that a 'bamboo' folder will be created in there."
+		read -p "Enter Bamboo base path: " -i /opt -e bamboobasepath
+		bamboolinkpath="$bamboobasepath/bamboo"
+		read -p "Enter Bamboo base data path: " -i /var/opt -e bamboodatapath
+		echo ""
 	fi
 
 	ask "Install Atlassian Stash?" N
@@ -678,7 +680,7 @@ EOF
 # Confluence Linux service controller script
 cd "$confluencelinkpath/bin"
 EOF
-		cat <<EOF >> /etc/init.d/$productconfluence
+		cat <<'EOF' >> /etc/init.d/$productconfluence
 
 case "$1" in
     start)
@@ -720,7 +722,7 @@ if [ "$installbamboo" == "1" ] || [ "$installstash" == "1" ] || [ "$installfishe
 		rm  /opt/java_current
 	fi
 	ln -s /opt/$jdkunpack /opt/java_current
-	echo "Setting up JAVA_HOME in /etc/environment if it doesn't exist. Hold on!"
+	echo -e "Setting up JAVA_HOME in /etc/environment if it doesn't exist. Hold on!\n"
 	grep JAVA_HOME="/opt/java_current" /etc/environment
 	if [ $? -eq 1 ]; then
 		echo JAVA_HOME="/opt/java_current" >> /etc/environment
@@ -737,26 +739,24 @@ if [ $installbamboo -ne 0 ] ; then
 	wget -O /tmp/$productbamboo-$bambooversion.tar.gz $dlbamboo
 	echo "Unpack it..."
 	tar xzf /tmp/$productbamboo-$bambooversion.tar.gz
-	echo "Move it to /opt/atlassian/"
-	mkdir /opt/atlassian
-	mv /tmp/atlassian-$productbamboo-$bambooversion /opt/atlassian/
-	echo "Link it to $bambooinstallpath ..."
+	echo "Move it to $bamboobasepath"
+	mkdir $bamboobasepath && mkdir $bamboolinkpath
+	mv /tmp/atlassian-$productbamboo-$bambooversion $bamboobasepath
+	echo "Link it to $bamboolinkpath ..."
 	if [ -d $bamboolinkpath ]; then
 		rm  $bamboolinkpath
 	fi
-	ln -s /opt/atlassian/atlassian-$productbamboo-$bambooversion $bamboolinkpath
+	ln -s $bamboobasepath/atlassian-$productbamboo-$bambooversion $bamboolinkpath
 	cp $mysqlcjar $bamboolinkpath/lib/
 	echo "Create a home directory, set up rights and tell Bamboo where to find it..."
-	bamboohome="/var/atlassian/application-data/bamboo-home"
+	bamboohome="$bamboodatapath/bamboo-home"
 	echo bamboo.home=$bamboohome >> $bamboolinkpath/atlassian-bamboo/WEB-INF/classes/bamboo-init.properties
-	mkdir /var/atlassian
-	mkdir /var/atlassian/application-data
-	mkdir $bamboohome
+	mkdir $bamboodatapath && mkdir $bamboohome
 	useradd --create-home -c "Bamboo role account" bamboo
 	chown -R bamboo: $bamboolinkpath
 	chown -R bamboo: /opt/atlassian/atlassian-$productbamboo-$bambooversion
 	chown -R bamboo: $bamboohome
-	cat <<'EOF' > /etc/init.d/$productbamboo
+	cat <<EOF > /etc/init.d/$productbamboo
 #!/bin/sh -e
 # bamboo startup script
 #chkconfig: 2345 80 05
@@ -768,9 +768,11 @@ APP=bamboo
 # Name of the user to run as
 USER=bamboo
 # Location of application's bin directory
-BASE=/opt/atlassian/bamboo
+BASE=$bamboolinkpath
 # Location of Java JDK
 export JAVA_HOME=/opt/java_current
+EOF
+	cat <<'EOF' >> /etc/init.d/$productbamboo
  
 case "$1" in
   # Start command
