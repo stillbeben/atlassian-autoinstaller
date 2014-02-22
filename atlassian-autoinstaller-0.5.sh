@@ -634,6 +634,7 @@ case "$1" in
         ;;
 esac
 EOF
+	chmod +x /etc/init.d/$productjira
 	fi
 	echo -e "Now we must restart JIRA. Please wait...\n"
 	/etc/init.d/$productjira stop
@@ -692,6 +693,7 @@ case "$1" in
         ;;
 esac
 EOF
+	chmod +x /etc/init.d/$productconfluence
 	fi
 	echo -e "Now we must restart Confluence. Please wait...\n"
 	/etc/init.d/$productconfluence stop
