@@ -231,7 +231,7 @@ fi
 echo -e "\nBefore selecting other Atlassian products for installation, please note that these require downloading and installing Oracle Java.
 \nWhy? JIRA and Confluence are shipping with Java. The other applications are currently not. \n"
 
-ask "Proceed selecting other Atlassian products for download and therefore install Oracle Java too?" Y
+ask "Proceed selecting other Atlassian products for download and therefore install Oracle Java too?" N
 
 if [ $? -ne 1 ] ; then
 	installjava='1'
@@ -620,6 +620,8 @@ EOF
 
 # JIRA Linux service controller script
 cd "$jiralinkpath/bin"
+EOF
+		cat <<'EOF' >> /etc/init.d/$productjira
 
 case "$1" in
     start)
@@ -665,7 +667,7 @@ EOF
 	echo -e "Downloading and installing Confluence. This will take a while. \nAfter the download finished you can go through the setup by pressing enter. \nThe standard settings are fine. \n"
 	wget -O /tmp/$productconfluence-$confluenceversion-$arch.bin $dlconfluence
 	chmod +x /tmp/$productconfluence-$confluenceversion-$arch.bin
-	/tmp/$productconfluence-$confluenceversion-$arch.bin
+	/tmp/$productconfluence-$confluenceversion-$arch.bin -q -varfile /tmp/$productconfluence-$confluenceversion-$arch.unattended
 	cp $mysqlcjar $confluencelinkpath/lib/
 	if [ -f /etc/init.d/$productconfluence ] ; then
 		echo "Confluence init Script already installed. Nothing to do."
@@ -675,6 +677,8 @@ EOF
 
 # Confluence Linux service controller script
 cd "$confluencelinkpath/bin"
+EOF
+		cat <<EOF >> /etc/init.d/$productconfluence
 
 case "$1" in
     start)
