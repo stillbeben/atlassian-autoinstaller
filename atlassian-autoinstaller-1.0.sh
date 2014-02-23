@@ -6,7 +6,7 @@
 # Website: erinnerungsfragmente.de                                          #
 # Github: https://github.com/rullmann                                       #
 #                                                                           #
-# Version: 0.5 / Date: 22st February 2014                                   #
+# Version: 1.0 / Date: 23rd February 2014                                   #
 #                                                                           #
 # Permission to use, copy, modify, and/or distribute this software for any  #
 # purpose with or without fee is hereby granted, provided that the above    #
@@ -71,7 +71,7 @@ function ask {
 
 # Let's generate passwords easily
 function randpw { 
-	(< /dev/urandom tr -dc '1234567890aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ!?=-_#+' | head -c${1:-24};echo;)
+	(< /dev/urandom tr -dc '1234567890aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ!=-_#+' | head -c${1:-36};echo;)
 }
 
 # We must know which architecture to use
@@ -175,7 +175,7 @@ ask "Install Atlassian Confluence?" N
 if [ $? -ne 1 ] ; then
 	installconfluence='1'
 	productconfluence="confluence"
-	chooseconfluenceversion54="5.4.2, 5.4.1, 5.4"
+	chooseconfluenceversion54="5.4.3, 5.4.2, 5.4.1, 5.4"
 	chooseconfluenceversion53="5.3.4, 5.3.1, 5.3"
 	chooseconfluenceversion52="5.2.5, 5.2.3"
 	chooseconfluenceversion51="5.1.5, 5.1.4, 5.1.3, 5.1.2, 5.1.1, 5.1"
@@ -194,7 +194,8 @@ if [ $? -ne 1 ] ; then
 	        fi
 	 
 	        case "$REPLYCONFLUENCE" in
-				Latest) confluenceversion="5.4.2" ; return 0 ;;
+				Latest) confluenceversion="5.4.3" ; return 0 ;;
+				5.4.2) confluenceversion="5.4.3" ; return 0 ;;
 				5.4.2) confluenceversion="5.4.2" ; return 0 ;;
 				5.4.1) confluenceversion="5.4.1" ; return 0 ;;
 				5.4) confluenceversion="5.4" ; return 0 ;;
@@ -295,8 +296,9 @@ if [ $? -ne 1 ] ; then
 		read -s -p "Enter Password: " bamboodbpw
 		echo -e "\n\nWhich installation data path would you like to use?\nPlease note that a 'bamboo' folder will be created in there."
 		read -p "Enter Bamboo base path: " -i /opt -e bamboobasepath
-		bamboolinkpath="$bamboobasepath/bamboo"
+		bamboolinkpath="$bamboobasepath/$productbamboo"
 		read -p "Enter Bamboo base data path: " -i /var/opt -e bamboodatapath
+		bamboohome="$bamboodatapath/bamboo-home"
 		echo ""
 	fi
 
@@ -311,8 +313,6 @@ if [ $? -ne 1 ] ; then
 				export DEBIAN_FRONTEND=noninteractive
 			    aptitude install -q -y ${DEPS[*]}
 			}
-			stashinstallpath="/opt/atlassian/stash/"
-			stashlinkpath="/opt/atlassian/stash"
 			productstash="stash"
 			choosestashversion210="2.10.2, 2.10.9, 2.10.0"
 			choosestashversion29="2.9.5, 2.9.4, 2.9.3, 2.9.2, 2.9.1"
@@ -355,7 +355,12 @@ if [ $? -ne 1 ] ; then
 			echo -e "\nWe need to create a database for Stash. Please enter one or copy this random generated password: \n"
 			randpw
 			read -s -p "Enter Password: " stashdbpw
-			echo -e "\n"
+			echo -e "\n\nWhich installation data path would you like to use?\nPlease note that a 'stash' folder will be created in there."
+			read -p "Enter Stash base path: " -i /opt -e stashbasepath
+			stashlinkpath="$stashbasepath/$productstash"
+			read -p "Enter Stash base data path: " -i /var/opt -e stashdatapath
+			stashhome="$stashdatapath/stash-home"
+			echo ""
 		else
 			installstash=0
 			echo -e "Stash is not going to be installed as it won't work without git and perl! \n"
@@ -366,10 +371,8 @@ if [ $? -ne 1 ] ; then
 
 	if [ $? -ne 1 ] ; then
 		installfisheye='1'
-		fisheyefisheyeinstallpath="/opt/atlassian/fisheye/"
-		fisheyefisheyelinkpath="/opt/atlassian/fisheye"
 		productfisheye="fisheye"
-		choosefisheyeversion3="3.3.0, 3.2.4, 3.1.6, 3.0.3"
+		choosefisheyeversion3="3.3.1, 3.3.0, 3.2.4, 3.1.6, 3.0.3"
 		choosefisheyeversionold="2.10.8, 2.9.2, 2.8.2, 2.7.15, 2.6.9, 2.5.9"
 		function askfisheyeversion {
     		while true; do
@@ -385,7 +388,8 @@ if [ $? -ne 1 ] ; then
 		        fi
 		 
 		        case "$REPLYFISHEYE" in
-					Latest) fisheyeversion="3.3.0" ; return 0 ;;
+					Latest) fisheyeversion="3.3.1" ; return 0 ;;
+					3.3.1) fisheyeversion="3.3.1" ; return 0 ;;
 					3.3.0) fisheyeversion="3.3.0" ; return 0 ;;
 					3.2.4) fisheyeversion="3.2.4" ; return 0 ;;
 					3.1.6) fisheyeversion="3.1.6" ; return 0 ;;
@@ -405,15 +409,18 @@ if [ $? -ne 1 ] ; then
 		echo -e "\nWe need to create a database for Fisheye. Please enter one or copy this random generated password: \n"
 		randpw
 		read -s -p "Enter Password: " fisheyedbpw
-		echo -e "\n"
+		echo -e "\n\nWhich installation data path would you like to use?\nPlease note that a 'fisheye' folder will be created in there."
+		read -p "Enter Fisheye base path: " -i /opt -e fisheyebasepath
+		fisheyelinkpath="$fisheyebasepath/$productfisheye"
+		read -p "Enter Fisheye base data path: " -i /var/opt -e fisheyedatapath
+		fisheyehome="$fisheyedatapath/fisheye-home"
+		echo ""
 	fi
 
 	ask "Install Atlassian Crowd?" N
 
 	if [ $? -ne 1 ] ; then
 		installcrowd='1'
-		crowdinstallpath="/opt/atlassian/crowd/"
-		crowdlinkpath="/opt/atlassian/crowd"
 		productcrowd="crowd"
 		choosecrowdversion27="2.7.1, 2.7.0"
 		choosecrowdversionold="2.6.5, 2.6.4, 2.5.5, 2.4.10, 2.3.9, 2.2.9, 2.0.9"
@@ -450,10 +457,16 @@ if [ $? -ne 1 ] ; then
 		echo -e "\nWe need to create a database for Crowd. Please enter one or copy this random generated password: \n"
 		randpw
 		read -s -p "Enter Password: " crowddbpw
+		echo -e "\n\nWhich installation data path would you like to use?\nPlease note that a 'crowd' folder will be created in there."
+		read -p "Enter Crowd base path: " -i /opt -e crowdbasepath
+		crowdlinkpath="$crowdbasepath/$productcrowd"
+		read -p "Enter Crowd base data path: " -i /var/opt -e crowddatapath
+		crowdhome="$crowddatapath/crowd-home"
+		echo ""
 	fi
 fi
 
-echo -e "\n\n# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+echo -e "\n# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                           #
 # Now that you've choosen the Atlassian products you would like to install  #
 # it's time for a deep breath, checking the selections you've made and      #
@@ -471,20 +484,20 @@ if [ $installconfluence -ne 0 ] ; then
 	echo -e "* Confluence $confluenceversion\n    Installation path: $confluencelinkpath\n    Data path: $confluencedatapath\n"
 fi
 if [ $installbamboo -ne 0 ] ; then
-	echo -e "* Bamboo $bambooversion\n    Installation path: $bamboolinkpath\n    Data path: $bamboodatapath\n"
+	echo -e "* Bamboo $bambooversion\n    Installation path: $bamboolinkpath\n    Data path: $bamboohome\n"
 fi
 if [ $installstash -ne 0 ] ; then
-	echo -e "* Stash $stashversion\n    Installation path: $stashlinkpath\n    Data path: $stashdatapath\n"
+	echo -e "* Stash $stashversion\n    Installation path: $stashlinkpath\n    Data path: $stashhome\n"
 fi
 if [ $installfisheye -ne 0 ] ; then
-	echo -e "* Fisheye & Crucible $fisheyeversion\n    Installation path: $fisheyelinkpath\n    Data path: $fisheyedatapath\n"
+	echo -e "* Fisheye & Crucible $fisheyeversion\n    Installation path: $fisheyelinkpath\n    Data path: $fisheyehome\n"
 fi
 if [ $installcrowd -ne 0 ] ; then
-	echo -e "* Crowd $crowdversion\n    Installation path: $crowdlinkpath\n    Data path: $crowddatapath\n"
+	echo -e "* Crowd $crowdversion\n    Installation path: $crowdlinkpath\n    Data path: $crowdhome\n"
 fi
 echo""
 
-ask "Proceed with installation?" N
+ask "Proceed with installation?" Y
 
 if [ $? -ne 0 ] ; then
 	echo "Goodbye!"
@@ -641,8 +654,9 @@ EOF
 	chmod +x /etc/init.d/$productjira
 	fi
 	echo -e "Now we must restart JIRA. Please wait...\n"
-	/etc/init.d/$productjira stop
 	sleep 10
+	/etc/init.d/$productjira stop
+	sleep 5
 	/etc/init.d/$productjira start
 	echo -e "\nInstallation of JIRA finished.\n"
 fi
@@ -702,8 +716,9 @@ EOF
 	chmod +x /etc/init.d/$productconfluence
 	fi
 	echo -e "Now we must restart Confluence. Please wait...\n"
-	/etc/init.d/$productconfluence stop
 	sleep 10
+	/etc/init.d/$productconfluence stop
+	sleep 5
 	/etc/init.d/$productconfluence start
 	echo -e "\nInstallation of Confluence finished. \n"
 fi
@@ -731,7 +746,7 @@ fi
 
 if [ $installbamboo -ne 0 ] ; then
 	echo -e "Creating database for Bamboo... \n"
-	bamboodbbcreate="CREATE DATABASE $productbamboo CHARACTER SET utf8 COLLATE utf8_bin;"
+	bamboodbcreate="CREATE DATABASE $productbamboo CHARACTER SET utf8 COLLATE utf8_bin;"
 	bamboodbgrant="GRANT ALL on $productbamboo.* TO '$productbamboo'@'localhost' IDENTIFIED BY '$bamboodbpw';"
 	bamboosql="$bamboodbcreate $bamboodbgrant $dbflush"
 	mysql --defaults-file=/etc/mysql/debian.cnf -e "$bamboosql"
@@ -740,7 +755,7 @@ if [ $installbamboo -ne 0 ] ; then
 	echo "Unpack it..."
 	tar xzf /tmp/$productbamboo-$bambooversion.tar.gz
 	echo "Move it to $bamboobasepath"
-	mkdir $bamboobasepath && mkdir $bamboolinkpath
+	mkdir $bamboobasepath
 	mv /tmp/atlassian-$productbamboo-$bambooversion $bamboobasepath
 	echo "Link it to $bamboolinkpath ..."
 	if [ -d $bamboolinkpath ]; then
@@ -749,12 +764,12 @@ if [ $installbamboo -ne 0 ] ; then
 	ln -s $bamboobasepath/atlassian-$productbamboo-$bambooversion $bamboolinkpath
 	cp $mysqlcjar $bamboolinkpath/lib/
 	echo "Create a home directory, set up rights and tell Bamboo where to find it..."
-	bamboohome="$bamboodatapath/bamboo-home"
 	echo bamboo.home=$bamboohome >> $bamboolinkpath/atlassian-bamboo/WEB-INF/classes/bamboo-init.properties
-	mkdir $bamboodatapath && mkdir $bamboohome
+	mkdir $bamboodatapath
+	mkdir $bamboohome
 	useradd --create-home -c "Bamboo role account" bamboo
 	chown -R bamboo: $bamboolinkpath
-	chown -R bamboo: /opt/atlassian/atlassian-$productbamboo-$bambooversion
+	chown -R bamboo: $bamboobasepath/atlassian-$productbamboo-$bambooversion
 	chown -R bamboo: $bamboohome
 	cat <<EOF > /etc/init.d/$productbamboo
 #!/bin/sh -e
@@ -812,7 +827,7 @@ if [ $installstash -ne 0 ] ; then
 		echo "Installing Stash dependencies..."
 		installdepsstash
 		echo -e "Creating database for Stash... \n"
-		stashdbbcreate="CREATE DATABASE $productstash CHARACTER SET utf8 COLLATE utf8_bin;"
+		stashdbcreate="CREATE DATABASE $productstash CHARACTER SET utf8 COLLATE utf8_bin;"
 		stashdbgrant="GRANT ALL on $productstash.* TO '$productstash'@'localhost' IDENTIFIED BY '$stashdbpw';"
 		stashsql="$stashdbcreate $stashdbgrant $dbflush"
 		mysql --defaults-file=/etc/mysql/debian.cnf -e "$stashsql"
@@ -820,26 +835,24 @@ if [ $installstash -ne 0 ] ; then
 		wget -O /tmp/$productstash-$stashversion.tar.gz $dlstash
 		echo "Unpack it..."
 		tar xzf /tmp/$productstash-$stashversion.tar.gz
-		echo "Move it to /opt/atlassian/"
-		mkdir /opt/atlassian
-		mv /tmp/atlassian-$productstash-$productversion /opt/atlassian/
-		echo "Link it to $stashinstallpath ..."
+		echo "Move it to $stashbasepath"
+		mkdir $stashbasepath
+		mv /tmp/atlassian-$productstash-$stashversion $stashbasepath
+		echo "Link it to $stashbasepath/stash ..."
 		if [ -d $stashlinkpath ]; then
 			rm  $stashlinkpath
 		fi
-		ln -s /opt/atlassian/atlassian-$productstash-$stashversion $stashlinkpath
+		ln -s $stashbasepath/atlassian-$productstash-$stashversion $stashlinkpath
 		cp $mysqlcjar $stashlinkpath/lib/
 		echo "Create a home directory, set up rights and tell Stash where to find it..."
-		stashhome="/var/atlassian/application-data/stash-home"
 		echo STASH_HOME="$stashhome" >> $stashlinkpath/bin/setenv.sh
-		mkdir /var/atlassian
-		mkdir /var/atlassian/application-data
+		mkdir $stashdatapath
 		mkdir $stashhome
 		useradd --create-home -c "Stash role account" stash
 		chown -R stash: $stashlinkpath
-		chown -R stash: /opt/atlassian/atlassian-$productstash-$stashversion
+		chown -R stash: $stashbasepath/atlassian-$productstash-$stashversion
 		chown -R stash: $stashhome
-		cat <<'EOF' > /etc/init.d/$productstash
+		cat <<EOF > /etc/init.d/$productstash
 #! /bin/sh
 ### BEGIN INIT INFO
 # Provides:          stash
@@ -855,9 +868,11 @@ if [ $installstash -ne 0 ] ; then
 # RUNUSER: The user to run Stash as.
 RUNUSER=stash
 # STASH_INSTALLDIR: The path to the Stash installation directory
-STASH_INSTALLDIR="/opt/atlassian/stash"
+STASH_INSTALLDIR="$stashlinkpath"
 # STASH_HOME: Path to the Stash home directory
-STASH_HOME="/var/atlassian/application-data/stash-home"
+STASH_HOME="$stashhome"
+EOF
+		cat <<'EOF' >> /etc/init.d/$productstash
 # ==================================================================================
 # ==================================================================================
 # ==================================================================================
@@ -979,7 +994,7 @@ fi
 
 if [ $installfisheye -ne 0 ] ; then
 		echo -e "Creating database for Fisheye... \n"
-		fisheyedbbcreate="CREATE DATABASE $productfisheye CHARACTER SET utf8 COLLATE utf8_bin;"
+		fisheyedbcreate="CREATE DATABASE $productfisheye CHARACTER SET utf8 COLLATE utf8_bin;"
 		fisheyedbgrant="GRANT ALL on $productfisheye.* TO '$productfisheye'@'localhost' IDENTIFIED BY '$fisheyedbpw';"
 		fisheyesql="$fisheyedbcreate $fisheyedbgrant $dbflush"
 		mysql --defaults-file=/etc/mysql/debian.cnf -e "$fisheyesql"
@@ -987,30 +1002,28 @@ if [ $installfisheye -ne 0 ] ; then
 		wget -O /tmp/$productfisheye-$fisheyeversion.zip $dlfisheye
 		echo "Unpack it..."
 		unzip /tmp/$productfisheye-$fisheyeversion.zip -d /tmp/
-		echo "Move it to /opt/atlassian/"
-		mkdir /opt/atlassian
-		mv /tmp/fecru-$fisheyeversion /opt/atlassian/
-		echo "Link it to $fisheyeinstallpath ..."
+		echo "Move it to $fisheyelinkpath"
+		mkdir $fisheyebasepath
+		mv /tmp/fecru-$fisheyeversion $fisheyebasepath
+		echo "Link it to $fisheyelinkpath ..."
 		if [ -d $fisheyelinkpath ]; then
 			rm  $fisheyelinkpath
 		fi
-		ln -s /opt/atlassian/fecru-$fisheyeversion $fisheyelinkpath
+		ln -s $fisheyebasepath/fecru-$fisheyeversion $fisheyelinkpath
 		cp $mysqlcjar $fisheyelinkpath/lib/
 		echo "Create a home directory, set up rights and tell Fisheye where to find it..."
-		fisheyehome="/var/atlassian/application-data/fisheye-home"
 		grep FISHEYE_INST="$fisheyehome" /etc/environment
 		if [ $? -eq 1 ]; then
 			echo FISHEYE_INST="$fisheyehome" >> /etc/environment
 		fi
-		mkdir /var/atlassian
-		mkdir /var/atlassian/application-data
+		mkdir $fisheyedatapath
 		mkdir $fisheyehome
 		cp $fisheyelinkpath/config.xml $fisheyehome
 		useradd --create-home -c "Fisheye role account" fisheye
 		chown -R fisheye: $fisheyelinkpath
-		chown -R fisheye: /opt/atlassian/fecru-$fisheyeversion
+		chown -R fisheye: $fisheyebasepath/fecru-$fisheyeversion
 		chown -R fisheye: $fisheyehome
-		cat <<'EOF' > /etc/init.d/$productfisheye
+		cat <<EOF > /etc/init.d/$productfisheye
 #!/bin/bash
 # Fisheye startup script
 # chkconfig: 345 90 90
@@ -1018,7 +1031,9 @@ if [ $installfisheye -ne 0 ] ; then
 # original found at: http://jarrod.spiga.id.au/?p=35
 
 FISHEYE_USER=fisheye
-FISHEYE_HOME=/opt/atlassian/fisheye/bin
+FISHEYE_HOME=$fisheyebasepath/$productfisheye/bin
+EOF
+		cat <<'EOF' >> /etc/init.d/$productfisheye
 start() {
         echo "Starting FishEye: "
         if [ "x$USER" != "x$FISHEYE_USER" ]; then
@@ -1066,7 +1081,7 @@ fi
 
 if [ $installcrowd -ne 0 ] ; then
 		echo -e "Creating database for Crowd... \n"
-		crowddbbcreate="CREATE DATABASE $productcrowd CHARACTER SET utf8 COLLATE utf8_bin;"
+		crowddbcreate="CREATE DATABASE $productcrowd CHARACTER SET utf8 COLLATE utf8_bin;"
 		crowddbgrant="GRANT ALL on $productcrowd.* TO '$productcrowd'@'localhost' IDENTIFIED BY '$crowddbpw';"
 		crowdsql="$crowddbcreate $crowddbgrant $dbflush"
 		mysql --defaults-file=/etc/mysql/debian.cnf -e "$crowdsql"
@@ -1074,26 +1089,24 @@ if [ $installcrowd -ne 0 ] ; then
 		wget -O /tmp/$productcrowd-$crowdversion.tar.gz $dlcrowd
 		echo "Unpack it..."
 		tar xzf /tmp/$productcrowd-$crowdversion.tar.gz
-		echo "Move it to /opt/atlassian/"
-		mkdir /opt/atlassian
-		mv /tmp/atlassian-$productcrowd-$crowdversion /opt/atlassian/
-		echo "Link it to $crowdinstallpath ..."
+		echo "Move it to $crowdlinkpath"
+		mkdir $crowdbasepath
+		mv /tmp/atlassian-$productcrowd-$crowdversion $crowdbasepath
+		echo "Link it to $crowdlinkpath ..."
 		if [ -d $crowdlinkpath ]; then
 			rm  $crowdlinkpath
 		fi
-		ln -s /opt/atlassian/atlassian-$productcrowd-$crowdversion $crowdlinkpath
+		ln -s $crowdbasepath/atlassian-$productcrowd-$crowdversion $crowdlinkpath
 		cp $mysqlcjar $crowdlinkpath/apache-tomcat/lib/
 		echo "Create a home directory, set up rights and tell Crowd where to find it..."
-		crowdhome="/var/atlassian/application-data/crowd-home"
 		echo crowd.home=$crowdhome >> $crowdlinkpath/crowd-webapp/WEB-INF/classes/crowd-init.properties
-		mkdir /var/atlassian
-		mkdir /var/atlassian/application-data
+		mkdir $crowddatapath
 		mkdir $crowdhome
 		useradd --create-home -c "Crowd role account" crowd
 		chown -R crowd: $crowdlinkpath
-		chown -R crowd: /opt/atlassian/atlassian-$productcrowd-$crowdversion
+		chown -R crowd: $crowdbasepath/atlassian-$productcrowd-$crowdversion
 		chown -R crowd: $crowdhome
-		cat <<'EOF' > /etc/init.d/$productcrowd
+		cat <<EOF > /etc/init.d/$productcrowd
 #!/bin/bash
 # Crowd startup script
 #chkconfig: 2345 80 05
@@ -1103,7 +1116,9 @@ if [ $installcrowd -ne 0 ] ; then
 # Based on script at http://www.bifrost.org/problems.html
  
 RUN_AS_USER=crowd
-CATALINA_HOME=/opt/atlassian/crowd/apache-tomcat
+CATALINA_HOME=$crowdbasepath/$productcrowd/apache-tomcat
+EOF
+		cat <<'EOF' >> /etc/init.d/$productcrowd
  
 start() {
         echo "Starting Crowd: "
@@ -1154,10 +1169,10 @@ fi
 
 echo "Install of all selected Atlassian products finished."
 
-ask "Last step before printing the connection details is to secure your MySQL Server installation. Proceed?" N
+ask "Last step before printing the connection details is to secure your MySQL Server installation. Proceed?" Y
 
 if [ $? -ne 0 ] ; then
-	echo "Please secure your MySQL Server later by executing 'mysql_secure_installation'."
+	echo -e "Please secure your MySQL Server later by executing 'mysql_secure_installation'.\n"
 else
 	mysql_secure_installation	
 fi
