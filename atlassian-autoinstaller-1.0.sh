@@ -117,6 +117,7 @@ ask "Install Atlassian JIRA?" N
 if [ $? -ne 1 ] ; then
 	installjira='1'
 	productjira="jira"
+	choosejiraversion62="6.2"
 	choosejiraversion61="6.1.7, 6.1.6, 6.1.5, 6.1.4, 6.1.3, 6.1.2, 6.1.1, 6.1"
 	choosejiraversion6="6.0.8, 6.0.7, 6.0.6, 6.0.5, 6.0.4, 6.0.3, 6.0.2, 6.0.1, 6.0"
 	choosejiraversionold="5.2.11, 5.1.8, 5.0.7, 4.4.5"
@@ -133,7 +134,8 @@ if [ $? -ne 1 ] ; then
 	        fi
 	 
 	        case "$REPLYJIRA" in
-				Latest) jiraversion="6.1.7" ; return 0 ;;
+				Latest) jiraversion="6.2" ; return 0 ;;
+				6.2) jiraversion="6.2" ; return 0 ;;
 				6.1.7) jiraversion="6.1.7" ; return 0 ;;
 				6.1.6) jiraversion="6.1.6" ; return 0 ;;
 				6.1.5) jiraversion="6.1.5" ; return 0 ;;
@@ -158,7 +160,7 @@ if [ $? -ne 1 ] ; then
 	        esac
     	done
 	}
-	echo -e "\nWhich version of JIRA would you like to install? \n\n    Available are: \n    $choosejiraversion61 \n    $choosejiraversion6 \n    $choosejiraversionold \n"
+	echo -e "\nWhich version of JIRA would you like to install? \n\n    Available are: \n    $choosejiraversion62 \n    $choosejiraversion61 \n    $choosejiraversion6 \n    $choosejiraversionold \n"
 	askjiraversion "Please choose now:" Latest
 	dljira="https://downloads.atlassian.com/software/$productjira/downloads/atlassian-$productjira-$jiraversion-$arch.bin"
 	echo -e "\nWe need to create a database for JIRA. Please enter one or copy this random generated password: \n"
