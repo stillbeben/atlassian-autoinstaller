@@ -216,6 +216,7 @@ if [ $? -ne 1 ] ; then
 				5.0.2) confluenceversion="5.0.2" ; return 0 ;;
 				5.0.1) confluenceversion="5.0.1" ; return 0 ;;
 				5.0) confluenceversion="5.0" ; return 0 ;;
+				4.3.7) confluenceversion="4.3.7" ; return 0 ;;
 	        esac
     	done
 	}
