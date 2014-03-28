@@ -117,7 +117,7 @@ ask "Install Atlassian JIRA?" N
 if [ $? -ne 1 ] ; then
 	installjira='1'
 	productjira="jira"
-	choosejiraversion62="6.2"
+	choosejiraversion62="6.2.1, 6.2,"
 	choosejiraversion61="6.1.7, 6.1.6, 6.1.5, 6.1.4, 6.1.3, 6.1.2, 6.1.1, 6.1"
 	choosejiraversion6="6.0.8, 6.0.7, 6.0.6, 6.0.5, 6.0.4, 6.0.3, 6.0.2, 6.0.1, 6.0"
 	choosejiraversionold="5.2.11, 5.1.8, 5.0.7, 4.4.5"
@@ -134,7 +134,8 @@ if [ $? -ne 1 ] ; then
 	        fi
 	 
 	        case "$REPLYJIRA" in
-				Latest) jiraversion="6.2" ; return 0 ;;
+				Latest) jiraversion="6.2.1" ; return 0 ;;
+				6.2.1) jiraversion="6.2.1" ; return 0 ;;
 				6.2) jiraversion="6.2" ; return 0 ;;
 				6.1.7) jiraversion="6.1.7" ; return 0 ;;
 				6.1.6) jiraversion="6.1.6" ; return 0 ;;
@@ -177,7 +178,7 @@ ask "Install Atlassian Confluence?" N
 if [ $? -ne 1 ] ; then
 	installconfluence='1'
 	productconfluence="confluence"
-	chooseconfluenceversion54="5.4.3, 5.4.2, 5.4.1, 5.4"
+	chooseconfluenceversion54="5.4.4, 5.4.3, 5.4.2, 5.4.1, 5.4"
 	chooseconfluenceversion53="5.3.4, 5.3.1, 5.3"
 	chooseconfluenceversion52="5.2.5, 5.2.3"
 	chooseconfluenceversion51="5.1.5, 5.1.4, 5.1.3, 5.1.2, 5.1.1, 5.1"
@@ -196,8 +197,9 @@ if [ $? -ne 1 ] ; then
 	        fi
 	 
 	        case "$REPLYCONFLUENCE" in
-				Latest) confluenceversion="5.4.3" ; return 0 ;;
-				5.4.2) confluenceversion="5.4.3" ; return 0 ;;
+				Latest) confluenceversion="5.4.4" ; return 0 ;;
+				5.4.4) confluenceversion="5.4.4" ; return 0 ;;
+				5.4.3) confluenceversion="5.4.3" ; return 0 ;;
 				5.4.2) confluenceversion="5.4.2" ; return 0 ;;
 				5.4.1) confluenceversion="5.4.1" ; return 0 ;;
 				5.4) confluenceversion="5.4" ; return 0 ;;
@@ -250,7 +252,7 @@ if [ $? -ne 1 ] ; then
 	if [ $? -ne 1 ] ; then
 		installbamboo='1'
 		productbamboo="bamboo"
-		choosebambooversion54="5.4.1, 5.4"
+		choosebambooversion54="5.4.2, 5.4.1, 5.4"
 		choosebambooversion53="5.3"
 		choosebambooversion52="5.2.2, 5.2.1, 5.2"
 		choosebambooversion51="5.1.1, 5.1.0"
@@ -270,8 +272,8 @@ if [ $? -ne 1 ] ; then
 		        fi
 		 
 		        case "$REPLYBAMBOO" in
-					Latest) bambooversion="5.4.1" ; return 0 ;;
-					5.4.1) bambooversion="5.4.1" ; return 0 ;;
+					Latest) bambooversion="5.4.2" ; return 0 ;;
+					5.4.2) bambooversion="5.4.2" ; return 0 ;;
 					5.4.1) bambooversion="5.4.1" ; return 0 ;;
 					5.4) bambooversion="5.4" ; return 0 ;;
 					5.3) bambooversion="5.3" ; return 0 ;;
@@ -317,7 +319,8 @@ if [ $? -ne 1 ] ; then
 			    aptitude install -q -y ${DEPS[*]}
 			}
 			productstash="stash"
-			choosestashversion210="2.10.2, 2.10.9, 2.10.0"
+			choosestashversion210="2.11.5, 2.11.4, 2.11.3"
+			choosestashversion210="2.10.3, 2.10.2, 2.10.9, 2.10.0"
 			choosestashversion29="2.9.5, 2.9.4, 2.9.3, 2.9.2, 2.9.1"
 			choosestashversionold="2.8.4, 2.7.6, 2.6.5, 2.5.4, 2.4.2, 2.3.1, 2.2.0, 2.1.2"
 			function askstashversion {
@@ -334,7 +337,11 @@ if [ $? -ne 1 ] ; then
 			        fi
 			 
 			        case "$REPLYSTASH" in
-						Latest) stashversion="2.10.2" ; return 0 ;;
+						Latest) stashversion="2.11.5" ; return 0 ;;
+						2.11.5) stashversion="2.10.3" ; return 0 ;;
+						2.11.4) stashversion="2.10.3" ; return 0 ;;
+						2.11.3) stashversion="2.10.3" ; return 0 ;;
+						2.10.3) stashversion="2.10.3" ; return 0 ;;
 						2.10.2) stashversion="2.10.2" ; return 0 ;;
 						2.9.5) stashversion="2.9.5" ; return 0 ;;
 						2.9.4) stashversion="2.9.4" ; return 0 ;;
@@ -375,7 +382,7 @@ if [ $? -ne 1 ] ; then
 	if [ $? -ne 1 ] ; then
 		installfisheye='1'
 		productfisheye="fisheye"
-		choosefisheyeversion3="3.3.1, 3.3.0, 3.2.4, 3.1.6, 3.0.3"
+		choosefisheyeversion3="3.3.2, 3.3.1, 3.3.0, 3.2.4, 3.1.6, 3.0.3"
 		choosefisheyeversionold="2.10.8, 2.9.2, 2.8.2, 2.7.15, 2.6.9, 2.5.9"
 		function askfisheyeversion {
     		while true; do
@@ -391,7 +398,8 @@ if [ $? -ne 1 ] ; then
 		        fi
 		 
 		        case "$REPLYFISHEYE" in
-					Latest) fisheyeversion="3.3.1" ; return 0 ;;
+					Latest) fisheyeversion="3.3.2" ; return 0 ;;
+					3.3.1) fisheyeversion="3.3.2" ; return 0 ;;
 					3.3.1) fisheyeversion="3.3.1" ; return 0 ;;
 					3.3.0) fisheyeversion="3.3.0" ; return 0 ;;
 					3.2.4) fisheyeversion="3.2.4" ; return 0 ;;
