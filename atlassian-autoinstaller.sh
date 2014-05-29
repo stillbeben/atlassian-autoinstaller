@@ -117,7 +117,7 @@ ask "Install Atlassian JIRA?" N
 if [ $? -ne 1 ] ; then
 	installjira='1'
 	productjira="jira"
-	choosejiraversion62="6.2.3, 6.2.1, 6.2,"
+	choosejiraversion62="6.2.6, 6.2.5, 6.2.3, 6.2.1, 6.2,"
 	choosejiraversion61="6.1.7, 6.1.6, 6.1.5, 6.1.4, 6.1.3, 6.1.2, 6.1.1, 6.1"
 	choosejiraversion6="6.0.8, 6.0.7, 6.0.6, 6.0.5, 6.0.4, 6.0.3, 6.0.2, 6.0.1, 6.0"
 	choosejiraversionold="5.2.11, 5.1.8, 5.0.7, 4.4.5"
@@ -134,7 +134,9 @@ if [ $? -ne 1 ] ; then
 	        fi
 	 
 	        case "$REPLYJIRA" in
-				Latest) jiraversion="6.2.3" ; return 0 ;;
+				Latest) jiraversion="6.2.6" ; return 0 ;;
+                6.2.6) jiraversion="6.2.6" ; return 0 ;;
+                6.2.5) jiraversion="6.2.5" ; return 0 ;;
 				6.2.3) jiraversion="6.2.3" ; return 0 ;;
 				6.2.1) jiraversion="6.2.1" ; return 0 ;;
 				6.2) jiraversion="6.2" ; return 0 ;;
@@ -179,7 +181,7 @@ ask "Install Atlassian Confluence?" N
 if [ $? -ne 1 ] ; then
 	installconfluence='1'
 	productconfluence="confluence"
-	chooseconfluenceversion55="5.5"	
+	chooseconfluenceversion55="5.5.1, 5.5.2, 5.5"	
 	chooseconfluenceversion54="5.4.4, 5.4.3, 5.4.2, 5.4.1, 5.4"
 	chooseconfluenceversion53="5.3.4, 5.3.1, 5.3"
 	chooseconfluenceversion52="5.2.5, 5.2.3"
@@ -199,7 +201,9 @@ if [ $? -ne 1 ] ; then
 	        fi
 	 
 	        case "$REPLYCONFLUENCE" in
-				Latest) confluenceversion="5.5" ; return 0 ;;
+				Latest) confluenceversion="5.5.2" ; return 0 ;;
+                5.5.2) confluenceversion="5.5.2" ; return 0 ;;
+                5.5.1) confluenceversion="5.5.1" ; return 0 ;;
 				5.5) confluenceversion="5.5" ; return 0 ;;
 				5.4.4) confluenceversion="5.4.4" ; return 0 ;;
 				5.4.3) confluenceversion="5.4.3" ; return 0 ;;
