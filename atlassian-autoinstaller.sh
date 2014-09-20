@@ -117,8 +117,12 @@ ask "Install Atlassian JIRA?" N
 if [ $? -ne 1 ] ; then
 	installjira='1'
 	productjira="jira"
+<<<<<<< HEAD
 	choosejiraversion63="6.3.6, 6.3.5, 6.3.4, 6.3,"
 	choosejiraversion62="6.2.6, 6.2.5, 6.2.3, 6.2.1, 6.2,"
+=======
+	choosejiraversion62="6.2.7, 6.2.6, 6.2.5, 6.2.3, 6.2.1, 6.2,"
+>>>>>>> a23e6adc8bc965b3742ab5eeeb643448aa7a779a
 	choosejiraversion61="6.1.7, 6.1.6, 6.1.5, 6.1.4, 6.1.3, 6.1.2, 6.1.1, 6.1"
 	choosejiraversion6="6.0.8, 6.0.7, 6.0.6, 6.0.5, 6.0.4, 6.0.3, 6.0.2, 6.0.1, 6.0"
 	choosejiraversionold="5.2.11, 5.1.8, 5.0.7, 4.4.5"
@@ -135,11 +139,16 @@ if [ $? -ne 1 ] ; then
 	        fi
 	 
 	        case "$REPLYJIRA" in
+<<<<<<< HEAD
 				Latest) jiraversion="6.3.6" ; return 0 ;;
                 6.3.6) jiraversion="6.3.6" ; return 0 ;;
                 6.3.5) jiraversion="6.3.5" ; return 0 ;;
                 6.3.4) jiraversion="6.3.4" ; return 0 ;;
                 6.3) jiraversion="6.3" ; return 0 ;;
+=======
+				Latest) jiraversion="6.2.7" ; return 0 ;;
+                6.2.7) jiraversion="6.2.7" ; return 0 ;;
+>>>>>>> a23e6adc8bc965b3742ab5eeeb643448aa7a779a
                 6.2.6) jiraversion="6.2.6" ; return 0 ;;
                 6.2.5) jiraversion="6.2.5" ; return 0 ;;
 				6.2.3) jiraversion="6.2.3" ; return 0 ;;
@@ -186,8 +195,12 @@ ask "Install Atlassian Confluence?" N
 if [ $? -ne 1 ] ; then
 	installconfluence='1'
 	productconfluence="confluence"
+<<<<<<< HEAD
 	chooseconfluenceversion56="5.6.1, 5.6"	
 	chooseconfluenceversion55="5.5.1, 5.5.2, 5.5"	
+=======
+	chooseconfluenceversion55="5.5.3, 5.5.2, 5.5.1, 5.5"	
+>>>>>>> a23e6adc8bc965b3742ab5eeeb643448aa7a779a
 	chooseconfluenceversion54="5.4.4, 5.4.3, 5.4.2, 5.4.1, 5.4"
 	chooseconfluenceversion53="5.3.4, 5.3.1, 5.3"
 	chooseconfluenceversion52="5.2.5, 5.2.3"
@@ -207,9 +220,14 @@ if [ $? -ne 1 ] ; then
 	        fi
 	 
 	        case "$REPLYCONFLUENCE" in
+<<<<<<< HEAD
 				Latest) confluenceversion="5.6.1" ; return 0 ;;
                 5.6.1) confluenceversion="5.6.1" ; return 0 ;;
                 5.6) confluenceversion="5.6" ; return 0 ;;
+=======
+				Latest) confluenceversion="5.5.3" ; return 0 ;;
+                5.5.3) confluenceversion="5.5.3" ; return 0 ;;
+>>>>>>> a23e6adc8bc965b3742ab5eeeb643448aa7a779a
                 5.5.2) confluenceversion="5.5.2" ; return 0 ;;
                 5.5.1) confluenceversion="5.5.1" ; return 0 ;;
 				5.5) confluenceversion="5.5" ; return 0 ;;
@@ -453,7 +471,7 @@ if [ $? -ne 1 ] ; then
 	if [ $? -ne 1 ] ; then
 		installcrowd='1'
 		productcrowd="crowd"
-		choosecrowdversion27="2.7.1, 2.7.0"
+		choosecrowdversion27="2.7.2, 2.7.1, 2.7.0"
 		choosecrowdversionold="2.6.5, 2.6.4, 2.5.5, 2.4.10, 2.3.9, 2.2.9, 2.0.9"
 		function askcrowdversion {
     		while true; do
@@ -469,7 +487,8 @@ if [ $? -ne 1 ] ; then
 		        fi
 		 
 		        case "$REPLYCROWD" in
-					Latest) crowdversion="2.7.1" ; return 0 ;;
+					Latest) crowdversion="2.7.2" ; return 0 ;;
+					2.7.2) crowdversion="2.7.2" ; return 0 ;;
 					2.7.1) crowdversion="2.7.1" ; return 0 ;;
 					2.7.0) crowdversion="2.7.0" ; return 0 ;;
 					2.6.5) crowdversion="2.6.5" ; return 0 ;;
